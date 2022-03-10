@@ -9,3 +9,6 @@ ___
 ### (MASTER)
     - INICIALIZAÇÃO DE UM PROJETO COM FREERTOS 
     - DUAS TAREFAS QUE IMPRIMEM NA SERIAM MENSAGEM 
+## (Queue)
+    - Criação de filas
+    - Passando valores pela fila

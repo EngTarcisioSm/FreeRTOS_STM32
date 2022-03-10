@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-// #include "cmsis_os.h" //removido
+// #include "cmsis_os.h"   //removido
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -30,6 +30,7 @@
 
 #include <stdio.h>      //inclusão
 #include <string.h>     //inclusão
+#include <stdint.h>     //incluso
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,11 +55,10 @@ typedef enum
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
 
-//osThreadId defaultTaskHandle;   //removido
+//osThreadId defaultTaskHandle;		//removido
 /* USER CODE BEGIN PV */
+QueueHandle_t xQueue;
 SemaphoreHandle_t xMutex;
-
-char c_uartSend[100];   //buffer de escrita serial
 
 //funções de escrita serial
 void vPrintString(char *pc_uartSend_f);
@@ -70,14 +70,12 @@ void vUsartLib_Puts(char *c_data);
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
-void StartDefaultTask(void const * argument); //REMOVIDO
+void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
-//PROTOTIPO DA PRIMEIRA TAREFA
-void vTaskOne(void *pvParameters);
-//PROTOTIPO DA SEGUNDA TAREFA
-void vTaskTwo(void *pvParameters);
-
+void vTask_print_q(void *pvParameters);		//efetua envio de dados para fila
+void vTask_print(void *pvParameters);		//efetua o recebimento da fila
+void vTask_blink(void *pvParameters);		//efetua um toggle
 
 /* USER CODE END PFP */
 
@@ -134,33 +132,42 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
+  //criação da queue
+
+  //Criado uma fila com 5 espaços e cada espaço possui um tamanho de uint32_t. Função que Cria uma fila
+  if((xQueue = xQueueCreate(5, sizeof(uint32_t))) == NULL) {
+    vPrintString("Não foi possivel alocar a xQueue");
+  } else {
+    vPrintString("Fila criada com sucesso!");
+  }
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  // osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);    //removido
-  // defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);         //removido
+  // osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);   //removido
+  // defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);        //removido
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  //criação de tarefa 1
-  if ((xTaskCreate(vTaskOne, "TASK_ONE_NAME", configMINIMAL_STACK_SIZE, NULL, 1, NULL)) != pdTRUE )
-  {
-    vPrintString("Não foi possivel alocar tarefa vTaskOne no escalonador");
+  //criação da tarefa 1
+  if((xTaskCreate(vTask_print_q, "Task Print Q", configMINIMAL_STACK_SIZE * 2, NULL, 1, NULL)) != pdTRUE) {
+    vPrintString("Não foi possivel alocar tarefa Task Print Q no escalonador");
   }
 
-  //criação de tarefa 2
-  if ((xTaskCreate(vTaskTwo, "TASK_TWO_NAME", configMINIMAL_STACK_SIZE, NULL, 1, NULL)) != pdTRUE )
-  {
-    vPrintString("Não foi possivel alocar tarefa vTaskTwo no escalonador");
+  if((xTaskCreate(vTask_blink, "Task Blink", configMINIMAL_STACK_SIZE, NULL, 1, NULL)) != pdTRUE) {
+    vPrintString("não foi possivel alocar tarefa vTaskBlink no escalonador");
   }
-  
+
+  if((xTaskCreate(vTask_print, "Task Print", configMINIMAL_STACK_SIZE * 2, NULL, 1, NULL)) != pdTRUE) {
+    vPrintString("Não foi possivel alocar tarefa Task Print no escalonador");
+  }
   
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
-  // osKernelStart();    //Remover
+  // osKernelStart();    //removido 
   vTaskStartScheduler();
+
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -224,7 +231,6 @@ void SystemClock_Config(void)
   */
 static void MX_USART1_UART_Init(void)
 {
-
   /* USER CODE BEGIN USART1_Init 0 */
 
   /* USER CODE END USART1_Init 0 */
@@ -318,13 +324,15 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+//-----------------------------------------------------------------------------
 //funções de impressão
 void vPrintString(char *pc_uartSend_f) {
   //acionamentos necessários para chavear e acionar o rs485 em modo de transmissão
   HAL_GPIO_WritePin(SEL_0_GPIO_Port, SEL_0_Pin, Bit_RESET);
   HAL_GPIO_WritePin(SEL_1_GPIO_Port, SEL_1_Pin, Bit_RESET);
   HAL_GPIO_WritePin(EN_RX_485_GPIO_Port, EN_RX_485_Pin, Bit_RESET);
-  taskENTER_CRITICAL();
+//  taskENTER_CRITICAL();	//removido
+  xSemaphoreTake( xMutex, portMAX_DELAY );
   {
     vUsartLib_Puts(pc_uartSend_f);
   }
@@ -332,7 +340,8 @@ void vPrintString(char *pc_uartSend_f) {
   HAL_GPIO_WritePin(SEL_0_GPIO_Port, SEL_0_Pin, Bit_SET);
   HAL_GPIO_WritePin(SEL_1_GPIO_Port, SEL_1_Pin, Bit_SET);
   HAL_GPIO_WritePin(EN_RX_485_GPIO_Port, EN_RX_485_Pin, Bit_SET);
-  taskEXIT_CRITICAL();
+  xSemaphoreGive( xMutex );
+//  taskEXIT_CRITICAL();		//removido
 }
 void vUsartLib_Putc(UART_HandleTypeDef *huart, char c_data) {
   //envia um unico caractere
@@ -344,25 +353,83 @@ void vUsartLib_Puts(char *c_data) {
     vUsartLib_Putc(&huart1, *c_data++);
   }
 }
+//-----------------------------------------------------------------------------
 
 //funções de tarefas
-void vTaskOne(void *pvParameters) {
-  for (;;) {
-    vPrintString("Testando task_1...\n");
-    vTaskDelay( 1000 / portTICK_PERIOD_MS);
+void vTask_print_q(void *pvParameters){
+  uint32_t u32_count = 0;
+  uint32_t u32_status;
+  char c_uartSend[100];
+
+  vPrintString("Entrei na task Queue\n");
+
+  for ( ; ; ) {
+    //Envia na fila o valor da variável count, caso a fila esteja cheia ocorrerá retorno imediato
+    //           xQueueSend(1:nome fila   2:endereço da variavel  3: timeout)
+    u32_status = xQueueSend(xQueue, &u32_count, 50 / portTICK_PERIOD_MS);
+
+    if(u32_status == pdPASS) {
+      sprintf(c_uartSend, "O valor %ld de COUNT foi enviado na Queue!\n", u32_count);
+      vPrintString(c_uartSend);
+      u32_count++;
+      memset(c_uartSend, 0x00, 100);
+    }
+
+    //Bloqueia a task por 1 segundo
+    vPrintString("Task por sleep \r\n");
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
-  //o comando abaixo não deveria ser executado...Caso algo estranho ocorra, esta task é deletada
-  //primeiro parametro NULLinforma que é para desalocar da memória esta task
+  vTaskDelete( NULL ); //caso ocorra algo que faça o for sair 
+}
+
+
+void vTask_print(void *pvParameters){
+  uint32_t u32_count;
+  uint32_t u32_status;
+  char c_uartSend[100];
+
+  vPrintString("Entrei na task Print");
+
+  for( ; ; ){
+    //xQueueReceive(1:nome da fila 2:endereço variavel de recebimento, 3:timeout)
+    u32_status = xQueueReceive(xQueue, &u32_count, 0);
+    if(u32_status == pdTRUE){
+      sprintf(c_uartSend, "Count foi recebido. Valor = %ld.\n", u32_count);
+      vPrintString(c_uartSend);
+    }
+    vPrintString("Task print \r\n");
+    vTaskDelay( 1000 / portTICK_PERIOD_MS );
+  }
   vTaskDelete( NULL );
 }
-void vTaskTwo(void *pvParameters) { 
-  while(1){
-    vPrintString("Testando task_2...\n");
-    vTaskDelay( 1000 / portTICK_PERIOD_MS);
+
+void vTask_blink(void *pvParameters) {
+  for(;;) {
+    //Altera o estado do led
+    HAL_GPIO_TogglePin(DOUT_LED1_GPIO_Port, DOUT_LED1_Pin);
+    vTaskDelay( 250 / portTICK_PERIOD_MS );
   }
   vTaskDelete( NULL );
 }
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void const * argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
 
 /**
   * @brief  Period elapsed callback in non blocking mode
