@@ -6,9 +6,13 @@ ___
 
 ## BRANCH
 
-### (MASTER)
+### (001_Inicio)
     - INICIALIZAÇÃO DE UM PROJETO COM FREERTOS 
     - DUAS TAREFAS QUE IMPRIMEM NA SERIAM MENSAGEM 
-## (Queue)
+
+## (002_Queue)
     - Criação de filas
     - Passando valores pela fila
+
+## (003_Queue_String)
+    - Passando Strings por fila 
