@@ -132,9 +132,9 @@ int main(void) {
 	//criação da queue
 	//Criado uma fila com 5 espaços e cada espaço possui um tamanho de uint32_t. Função que Cria uma fila
 	if ((xQueue = xQueueCreate(5, sizeof(char*))) == NULL) {
-		vPrintString("Não foi possivel alocar a xQueue\n");
+		vPrintString("Não foi possivel alocar a xQueue");
 	} else {
-		vPrintString("Fila criada com sucesso!\n");
+		vPrintString("Fila criada com sucesso!");
 	}
 	/* USER CODE END RTOS_QUEUES */
 
@@ -146,7 +146,7 @@ int main(void) {
 	/* add threads, ... */
 	//criação da tarefa 1
 	if ((xTaskCreate(vTask_print_q, "Task Print Q",
-			configMINIMAL_STACK_SIZE * 3, NULL, 2, NULL)) != pdTRUE) {
+			configMINIMAL_STACK_SIZE * 3, NULL, 1, NULL)) != pdTRUE) {
 		vPrintString(
 				"Não foi possivel alocar tarefa Task Print Q no escalonador");
 	}
@@ -352,12 +352,12 @@ void vUsartLib_Puts(char *c_data) {
 //funções de tarefas
 void vTask_print_q(void *pvParameters) {
 	uint32_t u32_status;
-	char c_buffer_test[50];
+	char c_buffer_test[30];
 	char c_uartSend[100];
 
 	char *pt_string = c_buffer_test;//ponteiro de queue recebe o endereço do buffer de char
 
-	sprintf(c_buffer_test, "String teste queue\n");
+	sprintf(c_buffer_test, "String teste queue");
 
 	vPrintString("Entrei na task Queue\n");
 
@@ -371,6 +371,7 @@ void vTask_print_q(void *pvParameters) {
 					"O valor da  string \" %s \" foi enviado na Queue. \n",
 					c_buffer_test);
 			vPrintString(c_uartSend);
+			memset(c_uartSend, 0x00, 100);
 		}
 
 		//Bloqueia a task por 1 segundo
@@ -388,8 +389,8 @@ void vTask_print(void *pvParameters) {
 
 	for (;;) {
 		//xQueueReceive(1:nome da fila 2:endereço variavel de recebimento, 3:timeout)
-		u32_status = xQueueReceive(xQueue, &ps_receve_string, portMAX_DELAY);
-		if (u32_status == pdPASS) {
+		u32_status = xQueueReceive(xQueue, &ps_receve_string, 0);
+		if (u32_status == pdTRUE) {
 
 			//Para entender a necessidade de alocação dinamica de memoria
 			//deixo o link abaixo, onde explica porque precisamos fazer um malloc
@@ -398,12 +399,12 @@ void vTask_print(void *pvParameters) {
 			//https://stackoverflow.com/questions/19772667/c-sprintf-array-char-pointers
 			char *pc_uartSend = pvPortMalloc(strlen(ps_receve_string)+1);
 
-			sprintf(pc_uartSend, "Recebido a string \" %s \" \n", ps_receve_string);
-			vPrintString(pc_uartSend);
+			sprintf(pc_uartSend, "Recebido a string \" %S \" \n", ps_receve_string);
+			vPrintString(c_uartSend);
 			vPortFree(pc_uartSend);
 		}
 		vPrintString("Task print \r\n");
-		//vTaskDelay(1000 / portTICK_PERIOD_MS);
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
 	vTaskDelete( NULL);
 }
@@ -425,7 +426,14 @@ void vTask_blink(void *pvParameters) {
  * @retval None
  */
 /* USER CODE END Header_StartDefaultTask */
-
+void StartDefaultTask(void const *argument) {
+	/* USER CODE BEGIN 5 */
+	/* Infinite loop */
+	for (;;) {
+		osDelay(1);
+	}
+	/* USER CODE END 5 */
+}
 
 /**
  * @brief  Period elapsed callback in non blocking mode

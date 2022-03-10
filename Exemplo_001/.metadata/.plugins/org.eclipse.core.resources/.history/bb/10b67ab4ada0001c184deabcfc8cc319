@@ -425,7 +425,14 @@ void vTask_blink(void *pvParameters) {
  * @retval None
  */
 /* USER CODE END Header_StartDefaultTask */
-
+void StartDefaultTask(void const *argument) {
+	/* USER CODE BEGIN 5 */
+	/* Infinite loop */
+	for (;;) {
+		osDelay(1);
+	}
+	/* USER CODE END 5 */
+}
 
 /**
  * @brief  Period elapsed callback in non blocking mode

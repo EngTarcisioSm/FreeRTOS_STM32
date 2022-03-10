@@ -16,3 +16,10 @@ ___
 
 ## (003_Queue_String)
     - Passando Strings por fila 
+    - Não esta passando o valor mais sim um ponteiro 
+    - Quando em uma leitura de Queue, se usado "portMAX_DELAY" não há necessidade de utilizar vTaskDelay pois a tarefa ficará em stand-by até ocorrer uma nova recarga na Queue
+    - pvPortMalloc e pvPortFree são ports especificos do freeRTOS para alocação e desalocação de memoria de maneira deterministica e sem ocorrer problemas com tempo fixo
+    - Sempre ao alocar memoria deve-se desalocar ao fim do seu uso 
+
+
+    PAREI VIDEO 2: 1:50:02

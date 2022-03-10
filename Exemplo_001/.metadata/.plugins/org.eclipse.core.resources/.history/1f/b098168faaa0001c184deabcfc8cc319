@@ -389,7 +389,7 @@ void vTask_print(void *pvParameters) {
 	for (;;) {
 		//xQueueReceive(1:nome da fila 2:endereço variavel de recebimento, 3:timeout)
 		u32_status = xQueueReceive(xQueue, &ps_receve_string, portMAX_DELAY);
-		if (u32_status == pdPASS) {
+		if (u32_status == pdTRUE) {
 
 			//Para entender a necessidade de alocação dinamica de memoria
 			//deixo o link abaixo, onde explica porque precisamos fazer um malloc
@@ -398,7 +398,7 @@ void vTask_print(void *pvParameters) {
 			//https://stackoverflow.com/questions/19772667/c-sprintf-array-char-pointers
 			char *pc_uartSend = pvPortMalloc(strlen(ps_receve_string)+1);
 
-			sprintf(pc_uartSend, "Recebido a string \" %s \" \n", ps_receve_string);
+			sprintf(pc_uartSend, "Recebido a string \" %S \" \n", ps_receve_string);
 			vPrintString(pc_uartSend);
 			vPortFree(pc_uartSend);
 		}
@@ -425,7 +425,14 @@ void vTask_blink(void *pvParameters) {
  * @retval None
  */
 /* USER CODE END Header_StartDefaultTask */
-
+void StartDefaultTask(void const *argument) {
+	/* USER CODE BEGIN 5 */
+	/* Infinite loop */
+	for (;;) {
+		osDelay(1);
+	}
+	/* USER CODE END 5 */
+}
 
 /**
  * @brief  Period elapsed callback in non blocking mode
