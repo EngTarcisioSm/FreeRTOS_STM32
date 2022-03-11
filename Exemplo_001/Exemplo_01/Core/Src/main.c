@@ -154,7 +154,7 @@ int main(void) {
 	if ((xTaskCreate(vTask_blink, "Task Blink", configMINIMAL_STACK_SIZE, NULL,
 			1, NULL)) != pdTRUE) {
 		vPrintString(
-				"não foi possivel alocar tarefa vTaskBlink no escalonador");
+				"não foi possivel alocar tarefa Blink vTaskBlink no escalonador");
 	}
 
 	if ((xTaskCreate(vTask_print, "Task Print", configMINIMAL_STACK_SIZE * 3,
@@ -351,32 +351,51 @@ void vUsartLib_Puts(char *c_data) {
 
 //funções de tarefas
 void vTask_print_q(void *pvParameters) {
-	uint32_t u32_status;
-	char c_buffer_test[50];
-	char c_uartSend[100];
+	uint32_t u32_status = 0;
+	// char c_buffer_test[50];
+	// char c_uartSend[100];
 
-	char *pt_string = c_buffer_test;//ponteiro de queue recebe o endereço do buffer de char
+	// char *pt_string = c_buffer_test;//ponteiro de queue recebe o endereço do buffer de char
 
-	sprintf(c_buffer_test, "String teste queue\n");
+	// sprintf(c_buffer_test, "String teste queue\n");
+
+	const char *pcQueue_send = "Enviando string constante via queue!";
 
 	vPrintString("Entrei na task Queue\n");
 
 	for (;;) {
-		//Envia na fila o valor da variável count, caso a fila esteja cheia ocorrerá retorno imediato
-		//           xQueueSend(1:nome fila   2:endereço da variavel  3: timeout)
-		u32_status = xQueueSend(xQueue, &pt_string, 50 / portTICK_PERIOD_MS);
 
-		if (u32_status == pdPASS) {
-			sprintf(c_uartSend,
-					"O valor da  string \" %s \" foi enviado na Queue. \n",
-					c_buffer_test);
-			vPrintString(c_uartSend);
+		if(!HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && !u32_status) {
+			//Aguarda um periodo para evitar o efeito bounce bottão pressionado 
+			vTaskDelay( 50 / portTICK_PERIOD_MS );
+
+			if(!HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && !u32_status) {
+				//           xQueueSend(1:nome fila   2:endereço da variavel  3: timeout)	
+				if( xQueueSend( xQueue, &pcQueue_send, ( 50 / portTICK_PERIOD_MS)) == pdPASS) {
+
+					vPrintString("Valor da constante button enviado na queue! \n\n");
+				}
+			}
+
+			u32_status = 1;
+
 		}
 
-		//Bloqueia a task por 1 segundo
-		vPrintString("Task print \r\n");
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
+		//checa se o botão foi levantado
+		if( HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && u32_status ) {
+
+			vTaskDelay( 50 / portTICK_PERIOD_MS );	//delay para debounce
+
+			if( HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && u32_status ) {
+				
+				vPrintString("Botão foi solto! \n\n");
+				u32_status = 0;
+			}
+		}
+
+		vTaskDelay( 50 / portTICK_PERIOD_MS );
 	}
+	
 	vTaskDelete( NULL); //caso ocorra algo que faça o for sair
 }
 

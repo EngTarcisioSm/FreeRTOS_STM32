@@ -1941,3 +1941,25 @@
 2022-03-10 14:14:26,149 [WARN] FreeRTOS:999 - Null or empty value: should not occur! (nothing added to the table)
 2022-03-10 14:14:26,264 [INFO] RtosManager:604 - Active RTOS found at IOC load: FREERTOS [Cortex-M4NS]
 2022-03-10 14:14:26,266 [INFO] OpenFileManager:333 - Restore cursor
+2022-03-10 17:29:31,510 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 
+2022-03-11 07:56:31,513 [INFO] Activator:177 - 
+
+
+2022-03-11 07:56:31,515 [INFO] Activator:178 - !SESSION log4j initialized
+2022-03-11 07:56:44,020 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] mar 11, 2022 7:56:44 AM org.glassfish.grizzly.http.server.NetworkListener start
+2022-03-11 07:56:44,021 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] INFORMA??ES: Started listener bound to [localhost:1597]
+2022-03-11 07:56:44,022 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 
+2022-03-11 07:56:44,023 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] mar 11, 2022 7:56:44 AM org.glassfish.grizzly.http.server.HttpServer start
+2022-03-11 07:56:44,024 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] INFORMA??ES: [HttpServer] Started.
+2022-03-11 07:56:44,024 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 
+2022-03-11 10:57:32,719 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 
+2022-03-11 11:06:25,213 [INFO] Activator:177 - 
+
+
+2022-03-11 11:06:25,216 [INFO] Activator:178 - !SESSION log4j initialized
+2022-03-11 11:06:37,274 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] mar 11, 2022 11:06:37 AM org.glassfish.grizzly.http.server.NetworkListener start
+2022-03-11 11:06:37,276 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] INFORMA??ES: Started listener bound to [localhost:1595]
+2022-03-11 11:06:37,276 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 
+2022-03-11 11:06:37,278 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] mar 11, 2022 11:06:37 AM org.glassfish.grizzly.http.server.HttpServer start
+2022-03-11 11:06:37,278 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] INFORMA??ES: [HttpServer] Started.
+2022-03-11 11:06:37,278 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 
