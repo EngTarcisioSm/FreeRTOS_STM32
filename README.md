@@ -21,9 +21,11 @@ ___
     - pvPortMalloc e pvPortFree são ports especificos do freeRTOS para alocação e desalocação de memoria de maneira deterministica e sem ocorrer problemas com tempo fixo
     - Sempre ao alocar memoria deve-se desalocar ao fim do seu uso 
 
-## (004_Queue_Constantes_Por_Fila)
+## (004_Queue_Constantes_Por_Copia)
     - Passando constantes por fila através de cópia 
     - Efeito Bounce tratado neste exemplo
 
-## (005_Queue_Struct_Por_Fila)
+## (005_Queue_Struct_Por_Referencia)
     - Passando estruturas por fila 
+
+## (006_Queue_Struct_Copia)
