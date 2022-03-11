@@ -14,7 +14,7 @@ ___
     - Criação de filas
     - Passando valores pela fila
 
-## (003_Queue_String)
+## (003_Queue_String_Referencia)
     - Passando Strings por fila 
     - Não esta passando o valor mais sim um ponteiro 
     - Quando em uma leitura de Queue, se usado "portMAX_DELAY" não há necessidade de utilizar vTaskDelay pois a tarefa ficará em stand-by até ocorrer uma nova recarga na Queue
