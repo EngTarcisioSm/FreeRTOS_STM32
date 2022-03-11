@@ -25,4 +25,5 @@ ___
     - Passando constantes por fila através de cópia 
     - Efeito Bounce tratado neste exemplo
 
-
+## (005_Queue_Struct_Por_Fila)
+    - Passando estruturas por fila 
