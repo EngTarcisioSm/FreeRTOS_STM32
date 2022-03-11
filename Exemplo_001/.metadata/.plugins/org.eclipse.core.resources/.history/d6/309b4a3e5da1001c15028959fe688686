@@ -135,7 +135,7 @@ int main(void) {
 	/* add queues, ... */
 	//criação da queue
 	//Criado uma fila com 5 espaços e cada espaço possui um tamanho de uint32_t. Função que Cria uma fila
-	if ((xQueue = xQueueCreate(5, sizeof(char *))) == NULL) {
+	if ((xQueue = xQueueCreate(5, sizeof(char*))) == NULL) {
 		vPrintString("Não foi possivel alocar a xQueue\n");
 	} else {
 		vPrintString("Fila criada com sucesso!\n");
@@ -362,12 +362,18 @@ void vUsartLib_Puts(char *c_data) {
 //funções de tarefas
 void vTask_print_q(void *pvParameters) {
 	uint32_t u32_status = 0;
+	// char c_buffer_test[50];
+	// char c_uartSend[100];
 
-	struct AMessage xMessage = 
-	{
-		.c_messageID = 2,
-		.c_data = "Curso RTOS STM32"
-	};
+	// char *pt_string = c_buffer_test;//ponteiro de queue recebe o endereço do buffer de char
+
+	// sprintf(c_buffer_test, "String teste queue\n");
+
+	//const char *pcQueue_send = "Enviando string constante via queue!";
+
+	struct AMessage xMessage = { .c_messageID = 1, .c_messageID =
+			"Curso RTOS STM32" };
+
 	struct AMessage *px_message = &xMessage;
 
 	vPrintString("Entrei na task Queue\n");
@@ -376,15 +382,17 @@ void vTask_print_q(void *pvParameters) {
 
 		if (!HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin)
 				&& !u32_status) {
-			//Aguarda um periodo para evitar o efeito bounce bottão pressionado
+			//Aguarda um periodo para evitar o efeito bounce bottão pressionado 
 			vTaskDelay(50 / portTICK_PERIOD_MS);
 
 			if (!HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin)
 					&& !u32_status) {
-				//           xQueueSend(1:nome fila   2:endereço da variavel  3: timeout)
-				if ( xQueueSend(xQueue, (void*)&px_message, ( 50 / portTICK_PERIOD_MS)) == pdPASS) {
+				//           xQueueSend(1:nome fila   2:endereço da variavel  3: timeout)	
+				if ( xQueueSend(xQueue, &px_message,
+						( 50 / portTICK_PERIOD_MS)) == pdPASS) {
 
-					vPrintString("Valor da constante button enviado na queue! \n\n");
+					vPrintString(
+							"Valor da constante button enviado na queue! \n\n");
 				}
 			}
 
@@ -414,9 +422,9 @@ void vTask_print_q(void *pvParameters) {
 void vTask_print(void *pvParameters) {
 	uint32_t u32_status;
 	// char *ps_receve_string;
-	struct AMessage * msg;
+	struct AMessage *msg;
 
-	vPrintString("Entrei na task Print\n");
+	vPrintString("Entrei na task Print");
 
 	for (;;) {
 		//xQueueReceive(1:nome da fila 2:endereço variavel de recebimento, 3:timeout)
@@ -428,15 +436,14 @@ void vTask_print(void *pvParameters) {
 			//para alocar um buffer ao nosso ponteiro para uso na função sprintf
 			//lembrando que iremos usar o pvPortMalloc que é safe thread para o FreeRTOS
 			//https://stackoverflow.com/questions/19772667/c-sprintf-array-char-pointers
-			char *pc_uartSend = pvPortMalloc(sizeof(msg)+1);
+			char *pc_uartSend = pvPortMalloc(strlen(msg) + 1);
 
-			sprintf(pc_uartSend, "Estrutura recebida : ID = %d , MSG = \" %s \" \n", msg->c_messageID, msg->c_data);
+			sprintf(pc_uartSend, "Estrutura recebida: ID = %d, MSG = \" %s \"",
+					msg->c_messageID, msg->c_data);
 			vPrintString(pc_uartSend);
 			vPortFree(pc_uartSend);
-
-			msg->c_messageID++;
 		}
-		vPrintString("Task print \r\n\n");
+		vPrintString("Task print \r\n");
 		//vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
 	vTaskDelete( NULL);

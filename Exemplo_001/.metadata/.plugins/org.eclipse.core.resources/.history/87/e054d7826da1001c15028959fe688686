@@ -58,9 +58,10 @@ UART_HandleTypeDef huart1;
 QueueHandle_t xQueue;
 SemaphoreHandle_t xMutex;
 
-struct AMessage {
-	char c_messageID;
-	char c_data[20];
+struct AMessage
+{
+	char ucMessageID;
+	char ucData[ 20 ];
 };
 //funções de escrita serial
 void vPrintString(char *pc_uartSend_f);
@@ -361,85 +362,136 @@ void vUsartLib_Puts(char *c_data) {
 
 //funções de tarefas
 void vTask_print_q(void *pvParameters) {
-	uint32_t u32_status = 0;
+	
+		uint32_t status = 0;
+		//char Buffer_test[30];
+		//char UartSend[100];
 
-	struct AMessage xMessage = 
-	{
-		.c_messageID = 2,
-		.c_data = "Curso RTOS STM32"
-	};
-	struct AMessage *px_message = &xMessage;
+		//char * pt_string = Buffer_test; //ponteiro de queue recebe o endereço do buffer de char
 
-	vPrintString("Entrei na task Queue\n");
+		//sprintf(Buffer_test,"String test queue");
 
-	for (;;) {
+		/**
+		 * Cria e inicializa a variável xMessage;
+		 */
+		struct AMessage xMessage =
+		{
+			.ucMessageID = 1 ,
+			.ucData = "Curso RTOS STM32"
+		};
 
-		if (!HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin)
-				&& !u32_status) {
-			//Aguarda um periodo para evitar o efeito bounce bottão pressionado
-			vTaskDelay(50 / portTICK_PERIOD_MS);
+		/**
+		 * Passa o endereço de xMessage para um Ponteiro;
+		 */
+		struct AMessage * pxMessage = &xMessage;
 
-			if (!HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin)
-					&& !u32_status) {
-				//           xQueueSend(1:nome fila   2:endereço da variavel  3: timeout)
-				if ( xQueueSend(xQueue, (void*)&px_message, ( 50 / portTICK_PERIOD_MS)) == pdPASS) {
+		vPrintString("Entrei na task QUEUE \n\n");
 
-					vPrintString("Valor da constante button enviado na queue! \n\n");
+		/* As Tasks normalmente possuem um loop sem saída */
+		for( ;; )
+		{
+			/*
+			 * Envia na fila o valor da variável count;
+			 * Caso a fila esteja cheia será retornado imediatamente;
+			 * Sendo assim,
+			 */
+
+
+			if( !HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && !status)
+			{
+				/* status_return = xQueueSend( fila_name, variável_address, timeout) */
+				//status = xQueueSend( xQueue, &pcQueue_send, 50 / portTICK_PERIOD_MS );
+
+				vTaskDelay( 50 / portTICK_PERIOD_MS ); // delay para debounce
+
+				if( !HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && !status){
+
+					if( xQueueSend( xQueue, ( void * ) &pxMessage, (50 / portTICK_PERIOD_MS) ) == pdPASS )
+					{
+						//sprintf(UartSend,"O valor da string \" %s \" foi enviado na Queue.\n", Buffer_test);
+						//vPrintString(UartSend);
+
+						vPrintString("Valor da constante button enviado na queue! \n \n");
+
+					}
+					/* Bloqueia esta task por 1s */
+					status = 1;
+					//vPrintString("Task Queue \r\n");
 				}
 			}
 
-			u32_status = 1;
+			if( HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && status)
+			{
+				vTaskDelay( 50 / portTICK_PERIOD_MS ); // delay para debounce
 
-		}
-
-		//checa se o botão foi levantado
-		if (HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && u32_status) {
-
-			vTaskDelay(50 / portTICK_PERIOD_MS);	//delay para debounce
-
-			if (HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin)
-					&& u32_status) {
-
-				vPrintString("Botão foi solto! \n\n");
-				u32_status = 0;
+				if( HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && status)
+				{
+					vPrintString("Botão foi solto! \n \n");
+					status = 0;
+				}
 			}
+
+			//delay para bloquear a task por um curso periodo de tempo e dar a chance de outras task entrarem em execução
+			vTaskDelay( 50 / portTICK_PERIOD_MS);
 		}
-
-		vTaskDelay(50 / portTICK_PERIOD_MS);
-	}
-
-	vTaskDelete( NULL); //caso ocorra algo que faça o for sair
+		/* este comando não deveria ser executado... Caso algo estranho aconteça,
+		 * esta task será deletada; O parametro NULL informa que é para desalocar
+		 * da memória ESTA task;
+		*/
+	    vTaskDelete( NULL );
 }
 
 void vTask_print(void *pvParameters) {
-	uint32_t u32_status;
-	// char *ps_receve_string;
+	uint32_t status;
+
+	/**
+	 * A variável msg será responsável em armazenar o ponteiro da struct;
+	 */
 	struct AMessage * msg;
 
-	vPrintString("Entrei na task Print\n");
+	vPrintString("Entrei na task print");
 
-	for (;;) {
-		//xQueueReceive(1:nome da fila 2:endereço variavel de recebimento, 3:timeout)
-		u32_status = xQueueReceive(xQueue, &msg, portMAX_DELAY);
-		if (u32_status == pdPASS) {
+	for(;;)
+	{
+		/* status_return = xQueueReceive( fila_name, variável_address, timeout) */
+		status = xQueueReceive(xQueue, &msg, portMAX_DELAY);
 
+		//caso nao usar o portMAX_DELAY, fazer o bloqueio da tarefa com vTaskDelay no fim da task
+		//status = xQueueReceive(xQueue, &recebe_string, 0);
+
+		if(status == pdPASS)
+		{
 			//Para entender a necessidade de alocação dinamica de memoria
 			//deixo o link abaixo, onde explica porque precisamos fazer um malloc
 			//para alocar um buffer ao nosso ponteiro para uso na função sprintf
 			//lembrando que iremos usar o pvPortMalloc que é safe thread para o FreeRTOS
 			//https://stackoverflow.com/questions/19772667/c-sprintf-array-char-pointers
-			char *pc_uartSend = pvPortMalloc(sizeof(msg)+1);
 
-			sprintf(pc_uartSend, "Estrutura recebida : ID = %d , MSG = \" %s \" \n", msg->c_messageID, msg->c_data);
-			vPrintString(pc_uartSend);
-			vPortFree(pc_uartSend);
 
-			msg->c_messageID++;
+			char * UartSend = pvPortMalloc(sizeof(msg)+1);
+
+			//char * UartSend = NULL;
+
+			sprintf(UartSend,"Estrutura recebida : ID = %d , MSG = \" %s \" \n", msg->ucMessageID, msg->ucData);
+
+			vPrintString(UartSend);
+
+			//liberando o o espaço de memoria dinamica alocado para enviar a string
+			vPortFree(UartSend);  //vPortFree é a implementação Thread Safe da função free()
+
+			/**
+			 * Modifica o valor contido na variável xMessage declarada dentro da task_button;
+			 */
+			msg->ucMessageID++;
+
 		}
-		vPrintString("Task print \r\n\n");
+
+		vPrintString("Task print \r\n \n");
+
+		//caso usar portMAX_DELAY na fila, comentar esse bloqueio da task abaixo
 		//vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
-	vTaskDelete( NULL);
+    vTaskDelete(NULL);
 }
 
 void vTask_blink(void *pvParameters) {

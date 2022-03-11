@@ -366,7 +366,7 @@ void vTask_print_q(void *pvParameters) {
 	struct AMessage xMessage = 
 	{
 		.c_messageID = 2,
-		.c_data = "Curso RTOS STM32"
+		.c_data = "Curso RTOS STM32\n"
 	};
 	struct AMessage *px_message = &xMessage;
 
@@ -382,9 +382,11 @@ void vTask_print_q(void *pvParameters) {
 			if (!HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin)
 					&& !u32_status) {
 				//           xQueueSend(1:nome fila   2:endereço da variavel  3: timeout)
-				if ( xQueueSend(xQueue, (void*)&px_message, ( 50 / portTICK_PERIOD_MS)) == pdPASS) {
+				if ( xQueueSend(xQueue, (void*)px_message,
+						( 50 / portTICK_PERIOD_MS)) == pdPASS) {
 
-					vPrintString("Valor da constante button enviado na queue! \n\n");
+					vPrintString(
+							"Valor da constante button enviado na queue! \n\n");
 				}
 			}
 
@@ -412,34 +414,54 @@ void vTask_print_q(void *pvParameters) {
 }
 
 void vTask_print(void *pvParameters) {
-	uint32_t u32_status;
-	// char *ps_receve_string;
+	uint32_t status;
+
+	/**
+	 * A variável msg será responsável em armazenar o ponteiro da struct;
+	 */
 	struct AMessage * msg;
 
-	vPrintString("Entrei na task Print\n");
+	vPrintString("Entrei na task print");
 
-	for (;;) {
-		//xQueueReceive(1:nome da fila 2:endereço variavel de recebimento, 3:timeout)
-		u32_status = xQueueReceive(xQueue, &msg, portMAX_DELAY);
-		if (u32_status == pdPASS) {
+	for(;;)
+	{
+		/* status_return = xQueueReceive( fila_name, variável_address, timeout) */
+		status = xQueueReceive(xQueue, &msg, portMAX_DELAY);
 
+		//caso nao usar o portMAX_DELAY, fazer o bloqueio da tarefa com vTaskDelay no fim da task
+		//status = xQueueReceive(xQueue, &recebe_string, 0);
+
+		if(status == pdPASS)
+		{
 			//Para entender a necessidade de alocação dinamica de memoria
 			//deixo o link abaixo, onde explica porque precisamos fazer um malloc
 			//para alocar um buffer ao nosso ponteiro para uso na função sprintf
 			//lembrando que iremos usar o pvPortMalloc que é safe thread para o FreeRTOS
 			//https://stackoverflow.com/questions/19772667/c-sprintf-array-char-pointers
-			char *pc_uartSend = pvPortMalloc(sizeof(msg)+1);
 
+
+			char * UartSend = pvPortMalloc(sizeof(msg)+1);
+
+			//char * UartSend = NULL;
 			sprintf(pc_uartSend, "Estrutura recebida : ID = %d , MSG = \" %s \" \n", msg->c_messageID, msg->c_data);
-			vPrintString(pc_uartSend);
-			vPortFree(pc_uartSend);
+			vPrintString(UartSend);
 
-			msg->c_messageID++;
+			//liberando o o espaço de memoria dinamica alocado para enviar a string
+			vPortFree(UartSend);  //vPortFree é a implementação Thread Safe da função free()
+
+			/**
+			 * Modifica o valor contido na variável xMessage declarada dentro da task_button;
+			 */
+			msg->ucMessageID++;
+
 		}
-		vPrintString("Task print \r\n\n");
+
+		vPrintString("Task print \r\n \n");
+
+		//caso usar portMAX_DELAY na fila, comentar esse bloqueio da task abaixo
 		//vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
-	vTaskDelete( NULL);
+    vTaskDelete(NULL);
 }
 
 void vTask_blink(void *pvParameters) {

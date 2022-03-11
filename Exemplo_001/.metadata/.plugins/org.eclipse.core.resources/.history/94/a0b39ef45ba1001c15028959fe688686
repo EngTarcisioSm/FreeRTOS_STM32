@@ -135,7 +135,7 @@ int main(void) {
 	/* add queues, ... */
 	//criação da queue
 	//Criado uma fila com 5 espaços e cada espaço possui um tamanho de uint32_t. Função que Cria uma fila
-	if ((xQueue = xQueueCreate(5, sizeof(char *))) == NULL) {
+	if ((xQueue = xQueueCreate(5, sizeof(char*))) == NULL) {
 		vPrintString("Não foi possivel alocar a xQueue\n");
 	} else {
 		vPrintString("Fila criada com sucesso!\n");
@@ -150,27 +150,27 @@ int main(void) {
 	/* add threads, ... */
 	//criação da tarefa 1
 	if ((xTaskCreate(vTask_print_q, "Task Print Q",
-	configMINIMAL_STACK_SIZE * 3, NULL, 2, NULL)) != pdTRUE) {
+			configMINIMAL_STACK_SIZE * 3, NULL, 2, NULL)) != pdTRUE) {
 		vPrintString(
-				"Não foi possivel alocar tarefa Task Print Q no escalonador\n");
+				"Não foi possivel alocar tarefa Task Print Q no escalonador");
 	} else {
-		vPrintString("Tarefa Task Print Q criada com sucesso!\n");
+		vPrintString("Tarefa Task Print Q criada com sucesso!")
 	}
 
 	if ((xTaskCreate(vTask_blink, "Task Blink", configMINIMAL_STACK_SIZE, NULL,
 			1, NULL)) != pdTRUE) {
 		vPrintString(
-				"não foi possivel alocar tarefa Blink vTaskBlink no escalonador\n");
+				"não foi possivel alocar tarefa Blink vTaskBlink no escalonador");
 	} else {
-		vPrintString("Tarefa Task Blink criada com sucesso!\n");
+		vPrintString("Tarefa Task Blink criada com sucesso!")
 	}
 
 	if ((xTaskCreate(vTask_print, "Task Print", configMINIMAL_STACK_SIZE * 3,
-	NULL, 1, NULL)) != pdTRUE) {
+			NULL, 1, NULL)) != pdTRUE) {
 		vPrintString(
-				"Não foi possivel alocar tarefa Task Print no escalonador\n");
+				"Não foi possivel alocar tarefa Task Print no escalonador");
 	} else {
-		vPrintString("Tarefa Task Print criada com sucesso!\n");
+		vPrintString("Tarefa Task Print criada com sucesso!")
 	}
 
 	/* USER CODE END RTOS_THREADS */
@@ -362,27 +362,34 @@ void vUsartLib_Puts(char *c_data) {
 //funções de tarefas
 void vTask_print_q(void *pvParameters) {
 	uint32_t u32_status = 0;
+	// char c_buffer_test[50];
+	// char c_uartSend[100];
 
-	struct AMessage xMessage = 
+	// char *pt_string = c_buffer_test;//ponteiro de queue recebe o endereço do buffer de char
+
+	// sprintf(c_buffer_test, "String teste queue\n");
+
+	//const char *pcQueue_send = "Enviando string constante via queue!";
+
+	struct AMessage xMessage =
 	{
-		.c_messageID = 2,
-		.c_data = "Curso RTOS STM32"
-	};
+		.c_messageID = 1,
+		.c_messageID = "Curso RTOS STM32"
+	}
+
 	struct AMessage *px_message = &xMessage;
 
 	vPrintString("Entrei na task Queue\n");
 
 	for (;;) {
 
-		if (!HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin)
-				&& !u32_status) {
-			//Aguarda um periodo para evitar o efeito bounce bottão pressionado
-			vTaskDelay(50 / portTICK_PERIOD_MS);
+		if(!HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && !u32_status) {
+			//Aguarda um periodo para evitar o efeito bounce bottão pressionado 
+			vTaskDelay( 50 / portTICK_PERIOD_MS );
 
-			if (!HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin)
-					&& !u32_status) {
-				//           xQueueSend(1:nome fila   2:endereço da variavel  3: timeout)
-				if ( xQueueSend(xQueue, (void*)&px_message, ( 50 / portTICK_PERIOD_MS)) == pdPASS) {
+			if(!HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && !u32_status) {
+				//           xQueueSend(1:nome fila   2:endereço da variavel  3: timeout)	
+				if( xQueueSend( xQueue, &xMessage, ( 50 / portTICK_PERIOD_MS)) == pdPASS) {
 
 					vPrintString("Valor da constante button enviado na queue! \n\n");
 				}
@@ -393,30 +400,29 @@ void vTask_print_q(void *pvParameters) {
 		}
 
 		//checa se o botão foi levantado
-		if (HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && u32_status) {
+		if( HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && u32_status ) {
 
-			vTaskDelay(50 / portTICK_PERIOD_MS);	//delay para debounce
+			vTaskDelay( 50 / portTICK_PERIOD_MS );	//delay para debounce
 
-			if (HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin)
-					&& u32_status) {
-
+			if( HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && u32_status ) {
+				
 				vPrintString("Botão foi solto! \n\n");
 				u32_status = 0;
 			}
 		}
 
-		vTaskDelay(50 / portTICK_PERIOD_MS);
+		vTaskDelay( 50 / portTICK_PERIOD_MS );
 	}
-
+	
 	vTaskDelete( NULL); //caso ocorra algo que faça o for sair
 }
 
 void vTask_print(void *pvParameters) {
 	uint32_t u32_status;
 	// char *ps_receve_string;
-	struct AMessage * msg;
+	struct AMessage *msg;
 
-	vPrintString("Entrei na task Print\n");
+	vPrintString("Entrei na task Print");
 
 	for (;;) {
 		//xQueueReceive(1:nome da fila 2:endereço variavel de recebimento, 3:timeout)
@@ -428,15 +434,13 @@ void vTask_print(void *pvParameters) {
 			//para alocar um buffer ao nosso ponteiro para uso na função sprintf
 			//lembrando que iremos usar o pvPortMalloc que é safe thread para o FreeRTOS
 			//https://stackoverflow.com/questions/19772667/c-sprintf-array-char-pointers
-			char *pc_uartSend = pvPortMalloc(sizeof(msg)+1);
+			char *pc_uartSend = pvPortMalloc(strlen(ps_receve_string)+1);
 
-			sprintf(pc_uartSend, "Estrutura recebida : ID = %d , MSG = \" %s \" \n", msg->c_messageID, msg->c_data);
+			sprintf(pc_uartSend, "Estrutura recebida: ID = %d, MSG = \" %s \"", msg->c_messageID, msg->c_data);
 			vPrintString(pc_uartSend);
 			vPortFree(pc_uartSend);
-
-			msg->c_messageID++;
 		}
-		vPrintString("Task print \r\n\n");
+		vPrintString("Task print \r\n");
 		//vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
 	vTaskDelete( NULL);
@@ -459,6 +463,7 @@ void vTask_blink(void *pvParameters) {
  * @retval None
  */
 /* USER CODE END Header_StartDefaultTask */
+
 
 /**
  * @brief  Period elapsed callback in non blocking mode
