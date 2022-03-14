@@ -34,3 +34,9 @@ ___
     - Filas são utilizadas para passar informações para outras tasks;
     - Quando xQueueSend, utiliza portMAX_DELAY não há necessidade de checar se foi enviado para queue pois se a queue estiver cheia a tarefa ficará travada ali até que seja enviado 
     - Fim aula2
+
+## (007_TaskDebug_FreeRTOS)
+    - Começar novamente 
+
+    parei em 2:46
+    
