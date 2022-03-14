@@ -29,4 +29,7 @@ ___
     - Passando estruturas por fila 
 
 ## (006_Queue_Struct_Copia)
+    - Mais de uma fila em execução
+    - Passagem de parametros para a fila por cópia e por referencia (um para cada fila);
+    - Filas são utilizadas para passar informações para outras tasks;
     - Quando xQueueSend, utiliza portMAX_DELAY não há necessidade de checar se foi enviado para queue pois se a queue estiver cheia a tarefa ficará travada ali até que seja enviado 
