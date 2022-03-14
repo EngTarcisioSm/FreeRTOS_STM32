@@ -29,3 +29,4 @@ ___
     - Passando estruturas por fila 
 
 ## (006_Queue_Struct_Copia)
+    - Quando xQueueSend, utiliza portMAX_DELAY não há necessidade de checar se foi enviado para queue pois se a queue estiver cheia a tarefa ficará travada ali até que seja enviado 
