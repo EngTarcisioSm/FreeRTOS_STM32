@@ -1,9 +1,9 @@
-16:51:35 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+15:57:04 **** Incremental Build of configuration Debug for project Exemplo_01 ****
 make -j8 all 
 arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
 ../Core/Src/main.c: In function 'vUsartLib_Putc':
-../Core/Src/main.c:391:27: warning: pointer targets in passing argument 2 of 'HAL_UART_Transmit' differ in signedness [-Wpointer-sign]
-  391 |  HAL_UART_Transmit(huart, &c_data, 1, 10);
+../Core/Src/main.c:398:27: warning: pointer targets in passing argument 2 of 'HAL_UART_Transmit' differ in signedness [-Wpointer-sign]
+  398 |  HAL_UART_Transmit(huart, &c_data, 1, 10);
       |                           ^~~~~~~
       |                           |
       |                           char *
@@ -21,7 +21,7 @@ arm-none-eabi-size   Exemplo_01.elf
 arm-none-eabi-objdump -h -S  Exemplo_01.elf  > "Exemplo_01.list"
 arm-none-eabi-objcopy  -O binary  Exemplo_01.elf  "Exemplo_01.bin"
    text	   data	    bss	    dec	    hex	filename
-  23384	    124	  18044	  41552	   a250	Exemplo_01.elf
+  24660	    124	  58412	  83196	  144fc	Exemplo_01.elf
 Finished building: default.size.stdout
  
 Finished building: Exemplo_01.bin
@@ -29,5 +29,5 @@ Finished building: Exemplo_01.bin
 Finished building: Exemplo_01.list
  
 
-16:51:36 Build Finished. 0 errors, 1 warnings. (took 1s.4ms)
+15:57:05 Build Finished. 0 errors, 1 warnings. (took 1s.138ms)
 

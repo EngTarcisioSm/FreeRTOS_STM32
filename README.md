@@ -38,5 +38,68 @@ ___
 ## (007_TaskDebug_FreeRTOS)
     - Começar novamente 
 
-    parei em 2:46
+    - Inserir no arquivo de configuração do FreeRTOS (FreeRTOSConfig.h) os dois defines abaixo
+
+~~~c
+    /*DEFINES PARA HABILITAR O USO DAS FUNÇÕES VTASKLIST*/
+    #define configUSE_TRACE_FACILITY				1
+    #define configUSE_STATS_FORMATTING_FUNCTIONS	1
+~~~
+
+    - Função de debug:
+    
+~~~c
+    void vTask_blink(void *pvParameters) {
+        
+        char  c_buff[200];
+        
+        vPrintString("Entrando da Task de debug");
+        
+        for (;;) {
+            //Altera o estado do led
+            HAL_GPIO_TogglePin(DOUT_LED1_GPIO_Port, DOUT_LED1_Pin);
+            
+            vTaskList(c_buff);
+            
+            vPrintString("\n\r\nTask-------------State-----Prio------Stack---Num\r\n");
+            vPrintString(c_buff);
+            vPrintString("\n\n\n");
+            
+            memset(c_buff, 0, sizeof(c_buff));
+            
+            sprintf(c_buff, "Free Heap: %d bytes \n\n", xPortGetMinimumEverFreeHeapSize());
+            vPrintString(c_buff);
+            
+            memset(c_buff, 0, sizeof(c_buff));
+            
+            vTaskDelay(5000 / portTICK_PERIOD_MS);
+        }
+        vTaskDelete( NULL);
+    }
+~~~
+
+    - Saída
+        - Stack refere-se a quantidade de memória restante daquela atribuida a tarefa, lembrando que para calcular é o valor restante da Stack x 4, resultando no numero de bytes
+~~~
+<LF>
+Task-------------State-----Prio------Stack---Num<CR><LF>
+Task Blink     <HT>	X<HT>	1<HT>	88<HT>	2<CR><LF>
+IDLE           <HT>	R<HT>	0<HT>	104<HT>	7<CR><LF>
+task_1         <HT>	B<HT>	1<HT>	10<HT>	4<CR><LF>
+task_2         <HT>	B<HT>	1<HT>	10<HT>	5<CR><LF>
+Task Print Q   <HT>	B<HT>	2<HT>	316<HT>	1<CR><LF>
+Task Print     <HT>	B<HT>	1<HT>	318<HT>	3<CR><LF>
+vTask_print_cou<HT>	B<HT>	1<HT>	272<HT>	6<CR><LF>
+<LF>
+Free Heap: 47720 bytes <LF>
+
+~~~
+    - Buffer da task blink que funciona como debug do sistema teve sua memoria de tarefa aumentada 
+
+    - OBSERVAÇÃO: 
+        - Em #define configTOTAL_HEAP_SIZE, configurar para que utilize toda memoria ram, pois a lib HAL necessita de uma quantidade de memoria ram para efetuar seus procedimentos 
+
+
+
+LIVIA
     
