@@ -55,14 +55,20 @@ UART_HandleTypeDef huart1;
 
 //osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
-//criação de várias queues ao mesmo tempo
-static QueueHandle_t xQueue1 = NULL, xQueue2 = NULL, xQueue3 = NULL;
-
-//criação de uma variavel que aloca conjunto de queues
-static QueueSetHandle_t xQueueSet = NULL;
-
+QueueHandle_t xQueue_mail_box;
 SemaphoreHandle_t xMutex;
 
+
+struct AMessage {
+	char c_messageID;
+	char c_data[20];
+};
+
+typedef struct t {
+	uint32_t u32_value;
+	char c_task_id;
+	char *task_name;
+} xData_t;
 //funções de escrita serial
 void vPrintString(char *pc_uartSend_f);
 void vUsartLib_Putc(UART_HandleTypeDef *huart, char c_data);
@@ -76,10 +82,9 @@ static void MX_USART1_UART_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
-void vTask_check_event(void *pvParameters);
+void vTask_mail_box(void *pvParameters);
 void vTask1(void *pvParameters);
 void vTask2(void *pvParameters);
-void vTask3(void *pvParameters);
 void vTask_blink(void *pvParameters);		//efetua um toggle
 
 /* USER CODE END PFP */
@@ -138,30 +143,12 @@ int main(void)
   /* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
 	//criação da queue
-	 if((xQueue1 = xQueueCreate(1, sizeof(char *))) == NULL) {
-		 //queue não foi possivel de ser criada gerando erro
-		 vPrintString("Não foi possivel alocar xQueue1");
-	 } else {
-		 if((xQueue2 = xQueueCreate(1, sizeof(char *))) == NULL) {
-			 //queue não foi possivel de ser criada gerando erro
-			 vPrintString("Não foi possivel alocar xQueue2");
-		 } else {
-			 if((xQueue3 = xQueueCreate(1, sizeof(uint32_t *))) == NULL) {
-				 //queue não foi possivel de ser criada gerando erro
-				 vPrintString("Não foi possivel alocar xQueue3");
-			 } else {
-				 if((xQueueSet = xQueueCreateSet(1 * 3)) == NULL) {
-					 //queue não foi possivel de ser criada gerando erro
-					 vPrintString("Não foi possivel alocar xQueueSet");
-				 } else {
-					 xQueueAddToSet(xQueue1, xQueueSet);
-					 xQueueAddToSet(xQueue2, xQueueSet);
-					 xQueueAddToSet(xQueue3, xQueueSet);
-					 vPrintString("xQueueSet Preenchido");
-				 }
-			 }
-		 }
-	 }
+	//mail box criado
+	if ((xQueue_mail_box = xQueueCreate(1, sizeof(xData_t))) == NULL) {
+		vPrintString("Não foi possivel alocar a xQueue\n");
+	} else {
+		vPrintString("MailBox criado com sucesso!\n");
+	}
 
   /* USER CODE END RTOS_QUEUES */
 
@@ -187,17 +174,10 @@ int main(void)
 		vPrintString("Tarefa Task_2 criada com sucesso!\n");
 	}
 
-	if ((xTaskCreate(vTask3, "task_3", configMINIMAL_STACK_SIZE, NULL, 1, NULL))
-			!= pdTRUE) {
-		vPrintString("Não foi possivel alocar tarefa Task_3 no escalonador\n");
-	} else {
-		vPrintString("Tarefa Task_3 criada com sucesso!\n");
-	}
-
-	if ((xTaskCreate(vTask_check_event, "check_event", configMINIMAL_STACK_SIZE * 2, NULL, 2, NULL)) != pdTRUE) {
+	if ((xTaskCreate(vTask_mail_box, "task mailbox", configMINIMAL_STACK_SIZE, NULL, 1, NULL)) != pdTRUE) {
 		vPrintString("Não foi possivel alocar tarefa vTask_Print_count no escalonador.");
 	} else {
-		vPrintString("Tarefa check_event criada com sucesso!\n");
+		vPrintString("Tarefa mailbox criada com sucesso!\n");
 	}
 
 	if ((xTaskCreate(vTask_blink, "Task Blink", configMINIMAL_STACK_SIZE * 2, NULL,
@@ -412,45 +392,68 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 //funções de tarefas
 void vTask1(void *pvParameters) {
 
-	vPrintString("vTask_1 iniciada! \r\n");
+	xData_t xMail_Recv;
 
-	const TickType_t xBlockTime = pdMS_TO_TICKS( 500 );
+	const TickType_t xDelay500ms = pdMS_TO_TICKS(500);
 
-	const char * const pc_message = "Mensagem da task1 para Queue Set! \r\n";
+	char c_value_char[30];
+
+	vPrintString("vTask_1 iniciada!");
 
 	for(;;){
+		xQueuePeek(xQueue_mail_box, &xMail_Recv, xDelay500ms);
 
-		vTaskDelay(xBlockTime);
-		/*
-		 * Envia a cadeia de caracteres desta tarefa para xQueue1
-		 * Não é necessário usar um tempo de bloquei, mesmo que a fila possa conter apenas um item.
-		 * Isso ocorre porque a prioridade da tarefa que lê da fila é superior a prioridade da fila,
-		 * portanto a fila ja estará vazia novamente no momento em que a chamada para xQueueSend()
-		 * retornar. O tempo do bloco é definido como 0.
-		 */
-		xQueueSend(xQueue1, &pc_message, 0);
+		sprintf(c_value_char, "vTask_1 recebe %ld\r\n", xMail_Recv.u32_value);
+		vPrintString(c_value_char);
+
+		memset(c_value_char, 0x00, sizeof(c_value_char));
+
+		vTaskDelay( 1000 / portTICK_PERIOD_MS );
 	}
 	vTaskDelete(NULL);
 }
+
 
 void vTask2(void *pvParameters) {
 
+	xData_t xMail_Recv_2;
 
-	for(;;){
+	const TickType_t xDelay100ms = pdMS_TO_TICKS(100);
 
+	char c_value_char[30];
+
+	vPrintString("vTask_2 iniciada!");
+
+	for(;;) {
+		xQueuePeek(xQueue_mail_box, &xMail_Recv_2, xDelay100ms);
+
+		sprintf(c_value_char, "vTask2 recebe: %ld\r\n", xMail_Recv_2.u32_value);
+		vPrintString(c_value_char);
+
+		vTaskDelay( 1000 / portTICK_PERIOD_MS );
 	}
 	vTaskDelete(NULL);
 }
 
-void vTask3(void *pvParameters) {
 
+void vTask_mail_box(void *pvParameters) {
+	xData_t xMailStruct = {
+			.u32_value = 0,
+			.c_task_id = 1,
+			.task_name = "task_1"
+	};
 
-	for(;;){
+	vPrintString("vTask_Print_Count iniciada!");
 
+	for(;;) {
+		xQueueOverwrite(xQueue_mail_box, &xMailStruct);
+
+		xMailStruct.u32_value++;
+
+		vTaskDelay( 3000 / portTICK_PERIOD_MS );
 	}
 	vTaskDelete(NULL);
 }
-
 
 
 void vTask_blink(void *pvParameters) {

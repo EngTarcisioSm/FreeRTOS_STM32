@@ -46,7 +46,6 @@
 /*DEFINES PARA HABILITAR O USO DAS FUNÇÕES VTASKLIST*/
 #define configUSE_TRACE_FACILITY				1
 #define configUSE_STATS_FORMATTING_FUNCTIONS	1
-#define configUSE_QUEUE_SETS					1
 /* Section where include file can be added */
 /* USER CODE END Includes */
 

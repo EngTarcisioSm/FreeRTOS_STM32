@@ -118,8 +118,12 @@ Free Heap: 47720 bytes <LF>
 ## (009_MAILBOX)
     - 
 
-
-
-AULA 03 37:41 - FAZENDO A FUNÇÃO DE INTERRUPÇÃO DE BOTÃO 
-LIVIA
+## (010_QUEUE_SET)
+    - Não recomendado a utilização, a não ser que o uso de Queue normal seja impossibilitado
+    - É necessário o define descrito abaixo
+~~~c
+    #define configUSE_QUEUE_SETS					1
+~~~
     
+
+1:01:29 aula 3 - PASSANDO O CÓDIGO PARA A CUBEIDE
