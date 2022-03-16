@@ -108,6 +108,7 @@ Free Heap: 47720 bytes <LF>
     - Toda vez que que o token "BaseType_t xHigherPriorityTaskWoken" for inicializado, é indicado pela documentação do FreeRTOS que seja inicializado com o valor pdFALSE 
 
     - Observação
+        - Dentro de ISR é somente permitidos funçõe que mecham com o FreeRTOS que tenham final FROM_ISR, caso desrespeito dessa regra ocorre erro no FreeRTOS
 ~~~c
     //em todos os projetos
     #define configSUPPORT_STATIC_ALLOCATION          0

@@ -55,9 +55,11 @@ UART_HandleTypeDef huart1;
 
 //osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
-QueueHandle_t xQueue_mail_box;
+QueueHandle_t xQueue;
+QueueHandle_t xQueue_count;
 SemaphoreHandle_t xMutex;
 
+char aux = 0;
 
 struct AMessage {
 	char c_messageID;
@@ -82,10 +84,13 @@ static void MX_USART1_UART_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
-void vTask_mail_box(void *pvParameters);
+void vTask_print_q(void *pvParameters);		//efetua envio de dados para fila
+void vTask_print(void *pvParameters);		//efetua o recebimento da fila
+void vTask_blink(void *pvParameters);		//efetua um toggle
+
+void vTask_print_count(void *pvParameters);
 void vTask1(void *pvParameters);
 void vTask2(void *pvParameters);
-void vTask_blink(void *pvParameters);		//efetua um toggle
 
 /* USER CODE END PFP */
 
@@ -143,13 +148,19 @@ int main(void)
   /* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
 	//criação da queue
-	//mail box criado
-	if ((xQueue_mail_box = xQueueCreate(1, sizeof(xData_t))) == NULL) {
+	//Criado uma fila com 5 espaços e cada espaço possui um tamanho de uint32_t. Função que Cria uma fila
+	if ((xQueue = xQueueCreate(5, sizeof(struct AMessage*))) == NULL) {
 		vPrintString("Não foi possivel alocar a xQueue\n");
 	} else {
-		vPrintString("MailBox criado com sucesso!\n");
+		vPrintString("Fila criada com sucesso!\n");
 	}
 
+	//Nova fila criada para a struct do tipo xData_t
+	if ((xQueue_count = xQueueCreate(5, sizeof(xData_t))) == NULL) {
+		vPrintString("Não foi possivel alocar a xQueue\n");
+	} else {
+		vPrintString("Fila criada com sucesso!\n");
+	}
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -160,6 +171,30 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
 	//criação da tarefa 1
+	if ((xTaskCreate(vTask_print_q, "Task Print Q",
+	configMINIMAL_STACK_SIZE * 3, NULL, 2, NULL)) != pdTRUE) {
+		vPrintString(
+				"Não foi possivel alocar tarefa Task Print Q no escalonador\n");
+	} else {
+		vPrintString("Tarefa Task Print Q criada com sucesso!\n");
+	}
+
+	if ((xTaskCreate(vTask_blink, "Task Blink", configMINIMAL_STACK_SIZE * 2, NULL,
+			1, NULL)) != pdTRUE) {
+		vPrintString(
+				"não foi possivel alocar tarefa Blink vTaskBlink no escalonador\n");
+	} else {
+		vPrintString("Tarefa Task Blink criada com sucesso!\n");
+	}
+
+	if ((xTaskCreate(vTask_print, "Task Print", configMINIMAL_STACK_SIZE * 3,
+	NULL, 1, NULL)) != pdTRUE) {
+		vPrintString(
+				"Não foi possivel alocar tarefa Task Print no escalonador\n");
+	} else {
+		vPrintString("Tarefa Task Print criada com sucesso!\n");
+	}
+
 	if ((xTaskCreate(vTask1, "task_1", configMINIMAL_STACK_SIZE, NULL, 1, NULL))
 			!= pdTRUE) {
 		vPrintString("Não foi possivel alocar tarefa Task_1 no escalonador\n");
@@ -174,26 +209,18 @@ int main(void)
 		vPrintString("Tarefa Task_2 criada com sucesso!\n");
 	}
 
-	if ((xTaskCreate(vTask_mail_box, "task mailbox", configMINIMAL_STACK_SIZE, NULL, 1, NULL)) != pdTRUE) {
-		vPrintString("Não foi possivel alocar tarefa vTask_Print_count no escalonador.");
+	if ((xTaskCreate(vTask_print_count, "vTask_print_count",
+			configMINIMAL_STACK_SIZE * 3, NULL, 1, NULL)) != pdTRUE) {
+		vPrintString("Não foi possivel alocar tarefa Task_2 no escalonador\n");
 	} else {
-		vPrintString("Tarefa mailbox criada com sucesso!\n");
+		vPrintString("Tarefa Task_2 criada com sucesso!\n");
 	}
-
-	if ((xTaskCreate(vTask_blink, "Task Blink", configMINIMAL_STACK_SIZE * 2, NULL,
-			1, NULL)) != pdTRUE) {
-		vPrintString(
-				"não foi possivel alocar tarefa Blink vTaskBlink no escalonador\n");
-	} else {
-		vPrintString("Tarefa Task Blink criada com sucesso!\n");
-	}
-
 
 	vTaskStartScheduler();
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
-//  osKernelStart();
+  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
@@ -385,76 +412,118 @@ void vUsartLib_Puts(char *c_data) {
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
+	aux++;
+	/*
+	 * Cria e inicializa a variavel xMessage;
+	 */
+	static struct AMessage xISR_Message =
+	{
+			.c_data = "ISR RTOS by Tarcisio",
+			.c_messageID = 1
+	};
+
+	static struct AMessage * px_isr_message = &xISR_Message;
+
+
+	if( GPIO_Pin == DIN_CFIG_Pin) {
+		// xHigherPriorityTaskWoken -> gera a resposta se de fato foi enviado ou não, não possui temporização
+		// pois essa função deve ocupar o menor tempo possivel
+		xQueueSendFromISR(xQueue, (void *)&px_isr_message, &xHigherPriorityTaskWoken);
+
+		if( xHigherPriorityTaskWoken == pdTRUE ){
+			//Devolve o contexto para a tarefa de maior prioridade no sistema, caso xHigherPriorityTaskWoken seja falso é
+			//retornado para a tarefa que estava sendo executada anteriormente
+			portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+		}
+	}
 }
 //-----------------------------------------------------------------------------
 
 //funções de tarefas
-void vTask1(void *pvParameters) {
+void vTask_print_q(void *pvParameters) {
+	uint32_t u32_status = 0;
 
-	xData_t xMail_Recv;
+	struct AMessage xMessage =
+			{ .c_messageID = 2, .c_data = "Curso RTOS STM32" };
+	struct AMessage *px_message = &xMessage;
 
-	const TickType_t xDelay500ms = pdMS_TO_TICKS(500);
+	vPrintString("Entrei na task Queue\n");
 
-	char c_value_char[30];
+	for (;;) {
 
-	vPrintString("vTask_1 iniciada!");
+		if (!HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin)
+				&& !u32_status) {
+			//Aguarda um periodo para evitar o efeito bounce bottão pressionado
+			vTaskDelay(50 / portTICK_PERIOD_MS);
 
-	for(;;){
-		xQueuePeek(xQueue_mail_box, &xMail_Recv, xDelay500ms);
+			if (!HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin)
+					&& !u32_status) {
+				//           xQueueSend(1:nome fila   2:endereço da variavel  3: timeout)
+				if ( xQueueSend(xQueue, (void* )&px_message,
+						( 50 / portTICK_PERIOD_MS)) == pdPASS) {
 
-		sprintf(c_value_char, "vTask_1 recebe %ld\r\n", xMail_Recv.u32_value);
-		vPrintString(c_value_char);
+					vPrintString(
+							"Valor da constante button enviado na queue! \n\n");
+				}
+			}
 
-		memset(c_value_char, 0x00, sizeof(c_value_char));
+			u32_status = 1;
 
-		vTaskDelay( 1000 / portTICK_PERIOD_MS );
+		}
+
+		//checa se o botão foi levantado
+		if (HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin) && u32_status) {
+
+			vTaskDelay(50 / portTICK_PERIOD_MS);	//delay para debounce
+
+			if (HAL_GPIO_ReadPin(DIN_TARA_GPIO_Port, DIN_TARA_Pin)
+					&& u32_status) {
+
+				vPrintString("Botão foi solto! \n\n");
+				u32_status = 0;
+			}
+		}
+
+		vTaskDelay(50 / portTICK_PERIOD_MS);
 	}
-	vTaskDelete(NULL);
+
+	vTaskDelete( NULL); //caso ocorra algo que faça o for sair
 }
 
+void vTask_print(void *pvParameters) {
+	uint32_t u32_status;
+	// char *ps_receve_string;
+	struct AMessage *msg;
 
-void vTask2(void *pvParameters) {
+	vPrintString("Entrei na task Print\n");
 
-	xData_t xMail_Recv_2;
+	for (;;) {
+		//xQueueReceive(1:nome da fila 2:endereço variavel de recebimento, 3:timeout)
+		u32_status = xQueueReceive(xQueue, &msg, portMAX_DELAY);
+		if (u32_status == pdPASS) {
 
-	const TickType_t xDelay100ms = pdMS_TO_TICKS(100);
+			//Para entender a necessidade de alocação dinamica de memoria
+			//deixo o link abaixo, onde explica porque precisamos fazer um malloc
+			//para alocar um buffer ao nosso ponteiro para uso na função sprintf
+			//lembrando que iremos usar o pvPortMalloc que é safe thread para o FreeRTOS
+			//https://stackoverflow.com/questions/19772667/c-sprintf-array-char-pointers
+			char *pc_uartSend = pvPortMalloc(sizeof(msg) + 1);
 
-	char c_value_char[30];
+			sprintf(pc_uartSend,
+					"Estrutura recebida : ID = %d , MSG = \" %s \" \n",
+					msg->c_messageID, msg->c_data);
+			vPrintString(pc_uartSend);
+			vPortFree(pc_uartSend);
 
-	vPrintString("vTask_2 iniciada!");
-
-	for(;;) {
-		xQueuePeek(xQueue_mail_box, &xMail_Recv_2, xDelay100ms);
-
-		sprintf(c_value_char, "vTask2 recebe: %ld\r\n", xMail_Recv_2.u32_value);
-		vPrintString(c_value_char);
-
-		vTaskDelay( 1000 / portTICK_PERIOD_MS );
+			msg->c_messageID++;
+		}
+		vPrintString("Task print \r\n\n");
+		//vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
-	vTaskDelete(NULL);
+	vTaskDelete( NULL);
 }
-
-
-void vTask_mail_box(void *pvParameters) {
-	xData_t xMailStruct = {
-			.u32_value = 0,
-			.c_task_id = 1,
-			.task_name = "task_1"
-	};
-
-	vPrintString("vTask_Print_Count iniciada!");
-
-	for(;;) {
-		xQueueOverwrite(xQueue_mail_box, &xMailStruct);
-
-		xMailStruct.u32_value++;
-
-		vTaskDelay( 3000 / portTICK_PERIOD_MS );
-	}
-	vTaskDelete(NULL);
-}
-
 
 void vTask_blink(void *pvParameters) {
 
@@ -479,10 +548,103 @@ void vTask_blink(void *pvParameters) {
 
 		memset(c_buff, 0, sizeof(c_buff));
 
+
+
+		sprintf(c_buff, "%d entradas\n\n", aux);
+		memset(c_buff, 0, sizeof(c_buff));
+		vPrintString(c_buff);
+
+
 		vPrintString("\n\n\n");
 		vTaskDelay(5000 / portTICK_PERIOD_MS);
 	}
 	vTaskDelete( NULL);
+}
+
+void vTask_print_count(void *pvParameters) {
+	xData_t x_count;
+
+	vPrintString("vTask_Print_Count iniciada!");
+
+	for (;;) {
+
+		/*
+		 * Realiza a leitura da fila. Caso tenha algum valor a ser lido
+		 * este será armazenado em count;
+		 */
+		xQueueReceive(xQueue_count, &x_count, portMAX_DELAY);
+
+		char *pc_uartSend = pvPortMalloc(sizeof(x_count) + 1);
+
+		sprintf(pc_uartSend,
+				"Estrutura recebida : task_id = %d, task_name = \" %s \", value = %ld \n\n",
+				x_count.c_task_id, x_count.task_name, x_count.u32_value);
+
+		vPrintString(pc_uartSend);
+
+		vPortFree(pc_uartSend);
+
+		vTaskDelay( 10 / portTICK_PERIOD_MS );
+	}
+}
+
+void vTask1(void *pvParameters) {
+	xData_t x_count_1 = {
+			.u32_value = 0,
+			.c_task_id = 1,
+			.task_name = "task_1"
+	};
+
+	char c_value_char[30];
+
+	vPrintString("vTask_1 iniciada!");
+
+	for(;;) {
+		/*
+		 * Envia uma cópia do valor de count_1 na fila.
+		 * Caso a fila esteja cheia, esta task será bloqueada
+		 *
+		 * Não é checada se foi enviado pois caso não consiga existe o portMAX_DELAY, a tarefa
+		 * se manterá bloqueada até que seja enviada
+		 */
+		xQueueSend( xQueue_count, &x_count_1, portMAX_DELAY);
+
+		sprintf(c_value_char, "vTask_1 envia: %ld \r\n", x_count_1.u32_value);
+		vPrintString(c_value_char);
+
+		x_count_1.u32_value++;
+
+		vTaskDelay( 1000 / portTICK_PERIOD_MS );
+	}
+}
+
+void vTask2(void *pvParameters) {
+	xData_t x_count_2 = {
+			.u32_value = 0,
+			.c_task_id = 1,
+			.task_name = "task_2"
+	};
+
+	char c_value_char[30];
+
+	vPrintString("vTask_2 iniciada!");
+
+	for(;;) {
+		/*
+		 * Envia uma cópia do valor de count_1 na fila.
+		 * Caso a fila esteja cheia, esta task será bloqueada
+		 * Não é checada se foi enviado pois caso não consiga existe o portMAX_DELAY, a tarefa
+		 * se manterá bloqueada até que seja enviada
+		 */
+		xQueueSend( xQueue_count, &x_count_2, portMAX_DELAY);
+
+		sprintf(c_value_char, "vTask_2 envia: %ld \r\n", x_count_2.u32_value);
+		vPrintString(c_value_char);
+
+		x_count_2.u32_value++;
+
+		vTaskDelay( 1000 / portTICK_PERIOD_MS );
+	}
 }
 /* USER CODE END 4 */
 

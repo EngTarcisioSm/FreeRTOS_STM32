@@ -422,7 +422,7 @@ void vTask2(void *pvParameters) {
 
 	char c_value_char[30];
 
-	vPrintString("vTask_2 iniciada!");
+	vPrint("vTask_2 iniciada!");
 
 	for(;;) {
 		xQueuePeek(xQueue_mail_box, &xMail_Recv_2, xDelay100ms);

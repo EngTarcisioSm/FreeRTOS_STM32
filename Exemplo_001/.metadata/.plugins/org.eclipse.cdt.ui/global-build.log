@@ -4302,3 +4302,133 @@ Finished building: Exemplo_01.bin
  
 Finished building: Exemplo_01.list
  
+14:57:43 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:178:84: error: expected ';' before '}' token
+  178 |   vPrintString("Não foi possivel alocar tarefa vTask_Print_count no escalonador.")
+      |                                                                                    ^
+      |                                                                                    ;
+  179 |  } else {
+      |  ~                                                                                  
+../Core/Src/main.c: In function 'vUsartLib_Putc':
+../Core/Src/main.c:378:27: warning: pointer targets in passing argument 2 of 'HAL_UART_Transmit' differ in signedness [-Wpointer-sign]
+  378 |  HAL_UART_Transmit(huart, &c_data, 1, 10);
+      |                           ^~~~~~~
+      |                           |
+      |                           char *
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:406,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:21:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:723:73: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+  723 | HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                                ~~~~~~~~~^~~~~
+../Core/Src/main.c: In function 'HAL_GPIO_EXTI_Callback':
+../Core/Src/main.c:390:2: error: 'aux' undeclared (first use in this function)
+  390 |  aux++;
+      |  ^~~
+../Core/Src/main.c:390:2: note: each undeclared identifier is reported only once for each function it appears in
+In file included from ../Core/Src/main.c:28:
+../Core/Src/main.c:406:21: error: 'xQueue' undeclared (first use in this function)
+  406 |   xQueueSendFromISR(xQueue, (void *)&px_isr_message, &xHigherPriorityTaskWoken);
+      |                     ^~~~~~
+../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h:1216:107: note: in definition of macro 'xQueueSendFromISR'
+ 1216 | #define xQueueSendFromISR( xQueue, pvItemToQueue, pxHigherPriorityTaskWoken ) xQueueGenericSendFromISR( ( xQueue ), ( pvItemToQueue ), ( pxHigherPriorityTaskWoken ), queueSEND_TO_BACK )
+      |                                                                                                           ^~~~~~
+../Core/Src/main.c: In function 'vTask1':
+../Core/Src/main.c:437:15: error: 'xQueue_count' undeclared (first use in this function)
+  437 |   xQueueSend( xQueue_count, &x_count_1, portMAX_DELAY);
+      |               ^~~~~~~~~~~~
+../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h:479:80: note: in definition of macro 'xQueueSend'
+  479 | #define xQueueSend( xQueue, pvItemToQueue, xTicksToWait ) xQueueGenericSend( ( xQueue ), ( pvItemToQueue ), ( xTicksToWait ), queueSEND_TO_BACK )
+      |                                                                                ^~~~~~
+../Core/Src/main.c: In function 'vTask2':
+../Core/Src/main.c:468:15: error: 'xQueue_count' undeclared (first use in this function)
+  468 |   xQueueSend( xQueue_count, &x_count_2, portMAX_DELAY);
+      |               ^~~~~~~~~~~~
+../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h:479:80: note: in definition of macro 'xQueueSend'
+  479 | #define xQueueSend( xQueue, pvItemToQueue, xTicksToWait ) xQueueGenericSend( ( xQueue ), ( pvItemToQueue ), ( xTicksToWait ), queueSEND_TO_BACK )
+      |                                                                                ^~~~~~
+../Core/Src/main.c: In function 'StartDefaultTask':
+../Core/Src/main.c:528:5: warning: implicit declaration of function 'osDelay'; did you mean 'vTaskDelay'? [-Wimplicit-function-declaration]
+  528 |     osDelay(1);
+      |     ^~~~~~~
+      |     vTaskDelay
+make: *** [Core/Src/subdir.mk:40: Core/Src/main.o] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+15:57:01 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'vUsartLib_Putc':
+../Core/Src/main.c:378:27: warning: pointer targets in passing argument 2 of 'HAL_UART_Transmit' differ in signedness [-Wpointer-sign]
+  378 |  HAL_UART_Transmit(huart, &c_data, 1, 10);
+      |                           ^~~~~~~
+      |                           |
+      |                           char *
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:406,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:21:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:723:73: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+  723 | HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                                ~~~~~~~~~^~~~~
+../Core/Src/main.c: In function 'vTask2':
+../Core/Src/main.c:425:2: warning: implicit declaration of function 'vPrint'; did you mean 'vprintf'? [-Wimplicit-function-declaration]
+  425 |  vPrint("vTask_2 iniciada!");
+      |  ^~~~~~
+      |  vprintf
+../Core/Src/main.c: In function 'StartDefaultTask':
+../Core/Src/main.c:502:5: warning: implicit declaration of function 'osDelay'; did you mean 'vTaskDelay'? [-Wimplicit-function-declaration]
+  502 |     osDelay(1);
+      |     ^~~~~~~
+      |     vTaskDelay
+arm-none-eabi-gcc -o "Exemplo_01.elf" @"objects.list"   -mcpu=cortex-m4 -T"P:\ESTUDOS\freeRTOS\Projects\Exemplo_001\Exemplo_01\STM32F401RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Exemplo_01.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+c:\st\stm32cubeide_1.7.0\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.9-2020-q2-update.win32_2.0.0.202105311346\tools\arm-none-eabi\bin\ld.exe: ./Core/Src/main.o: in function `vTask2':
+P:/ESTUDOS/freeRTOS/Projects/Exemplo_001/Exemplo_01/Debug/../Core/Src/main.c:425: undefined reference to `vPrint'
+collect2.exe: error: ld returned 1 exit status
+make: *** [makefile:69: Exemplo_01.elf] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+15:57:28 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'vUsartLib_Putc':
+../Core/Src/main.c:378:27: warning: pointer targets in passing argument 2 of 'HAL_UART_Transmit' differ in signedness [-Wpointer-sign]
+  378 |  HAL_UART_Transmit(huart, &c_data, 1, 10);
+      |                           ^~~~~~~
+      |                           |
+      |                           char *
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:406,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:21:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:723:73: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+  723 | HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                                ~~~~~~~~~^~~~~
+../Core/Src/main.c: In function 'StartDefaultTask':
+../Core/Src/main.c:502:5: warning: implicit declaration of function 'osDelay'; did you mean 'vTaskDelay'? [-Wimplicit-function-declaration]
+  502 |     osDelay(1);
+      |     ^~~~~~~
+      |     vTaskDelay
+arm-none-eabi-gcc -o "Exemplo_01.elf" @"objects.list"   -mcpu=cortex-m4 -T"P:\ESTUDOS\freeRTOS\Projects\Exemplo_001\Exemplo_01\STM32F401RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Exemplo_01.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Exemplo_01.elf
+ 
+arm-none-eabi-size   Exemplo_01.elf 
+arm-none-eabi-objdump -h -S  Exemplo_01.elf  > "Exemplo_01.list"
+arm-none-eabi-objcopy  -O binary  Exemplo_01.elf  "Exemplo_01.bin"
+   text	   data	    bss	    dec	    hex	filename
+  23772	    124	  58404	  82300	  1417c	Exemplo_01.elf
+Finished building: default.size.stdout
+ 
+Finished building: Exemplo_01.bin
+ 
+Finished building: Exemplo_01.list
+ 
+15:57:40 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-size   Exemplo_01.elf 
+   text	   data	    bss	    dec	    hex	filename
+  23772	    124	  58404	  82300	  1417c	Exemplo_01.elf
+Finished building: default.size.stdout
+ 

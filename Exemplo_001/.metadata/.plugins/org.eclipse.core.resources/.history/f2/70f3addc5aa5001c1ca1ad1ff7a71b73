@@ -175,7 +175,7 @@ int main(void)
 	}
 
 	if ((xTaskCreate(vTask_mail_box, "task mailbox", configMINIMAL_STACK_SIZE, NULL, 1, NULL)) != pdTRUE) {
-		vPrintString("Não foi possivel alocar tarefa vTask_Print_count no escalonador.");
+		vPrintString("Não foi possivel alocar tarefa vTask_Print_count no escalonador.")
 	} else {
 		vPrintString("Tarefa mailbox criada com sucesso!\n");
 	}
@@ -385,74 +385,100 @@ void vUsartLib_Puts(char *c_data) {
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
+	aux++;
+	/*
+	 * Cria e inicializa a variavel xMessage;
+	 */
+	static struct AMessage xISR_Message =
+	{
+			.c_data = "ISR RTOS by Tarcisio",
+			.c_messageID = 1
+	};
+
+	static struct AMessage * px_isr_message = &xISR_Message;
+
+
+	if( GPIO_Pin == DIN_CFIG_Pin) {
+		// xHigherPriorityTaskWoken -> gera a resposta se de fato foi enviado ou não, não possui temporização
+		// pois essa função deve ocupar o menor tempo possivel
+		xQueueSendFromISR(xQueue, (void *)&px_isr_message, &xHigherPriorityTaskWoken);
+
+		if( xHigherPriorityTaskWoken == pdTRUE ){
+			//Devolve o contexto para a tarefa de maior prioridade no sistema, caso xHigherPriorityTaskWoken seja falso é
+			//retornado para a tarefa que estava sendo executada anteriormente
+			portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+		}
+	}
 }
 //-----------------------------------------------------------------------------
 
 //funções de tarefas
 void vTask1(void *pvParameters) {
-
-	xData_t xMail_Recv;
-
-	const TickType_t xDelay500ms = pdMS_TO_TICKS(500);
+	xData_t x_count_1 = {
+			.u32_value = 0,
+			.c_task_id = 1,
+			.task_name = "task_1"
+	};
 
 	char c_value_char[30];
 
 	vPrintString("vTask_1 iniciada!");
 
-	for(;;){
-		xQueuePeek(xQueue_mail_box, &xMail_Recv, xDelay500ms);
+	for(;;) {
+		/*
+		 * Envia uma cópia do valor de count_1 na fila.
+		 * Caso a fila esteja cheia, esta task será bloqueada
+		 *
+		 * Não é checada se foi enviado pois caso não consiga existe o portMAX_DELAY, a tarefa
+		 * se manterá bloqueada até que seja enviada
+		 */
+		xQueueSend( xQueue_count, &x_count_1, portMAX_DELAY);
 
-		sprintf(c_value_char, "vTask_1 recebe %ld\r\n", xMail_Recv.u32_value);
+		sprintf(c_value_char, "vTask_1 envia: %ld \r\n", x_count_1.u32_value);
 		vPrintString(c_value_char);
 
-		memset(c_value_char, 0x00, sizeof(c_value_char));
+		x_count_1.u32_value++;
 
 		vTaskDelay( 1000 / portTICK_PERIOD_MS );
 	}
-	vTaskDelete(NULL);
 }
 
 
 void vTask2(void *pvParameters) {
 
-	xData_t xMail_Recv_2;
-
-	const TickType_t xDelay100ms = pdMS_TO_TICKS(100);
+	xData_t x_count_2 = {
+			.u32_value = 0,
+			.c_task_id = 1,
+			.task_name = "task_2"
+	};
 
 	char c_value_char[30];
 
 	vPrintString("vTask_2 iniciada!");
 
 	for(;;) {
-		xQueuePeek(xQueue_mail_box, &xMail_Recv_2, xDelay100ms);
+		/*
+		 * Envia uma cópia do valor de count_1 na fila.
+		 * Caso a fila esteja cheia, esta task será bloqueada
+		 * Não é checada se foi enviado pois caso não consiga existe o portMAX_DELAY, a tarefa
+		 * se manterá bloqueada até que seja enviada
+		 */
+		xQueueSend( xQueue_count, &x_count_2, portMAX_DELAY);
 
-		sprintf(c_value_char, "vTask2 recebe: %ld\r\n", xMail_Recv_2.u32_value);
+		sprintf(c_value_char, "vTask_2 envia: %ld \r\n", x_count_2.u32_value);
 		vPrintString(c_value_char);
+
+		x_count_2.u32_value++;
 
 		vTaskDelay( 1000 / portTICK_PERIOD_MS );
 	}
-	vTaskDelete(NULL);
 }
 
 
 void vTask_mail_box(void *pvParameters) {
-	xData_t xMailStruct = {
-			.u32_value = 0,
-			.c_task_id = 1,
-			.task_name = "task_1"
-	};
 
-	vPrintString("vTask_Print_Count iniciada!");
-
-	for(;;) {
-		xQueueOverwrite(xQueue_mail_box, &xMailStruct);
-
-		xMailStruct.u32_value++;
-
-		vTaskDelay( 3000 / portTICK_PERIOD_MS );
-	}
-	vTaskDelete(NULL);
 }
 
 
