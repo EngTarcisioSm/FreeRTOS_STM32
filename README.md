@@ -101,5 +101,24 @@ Free Heap: 47720 bytes <LF>
 
 
 
+## (008_ISR_QUEUE_DETERMINISMO)
+    - Envio de QUEUE por acionamento de interrupção de botão
+    - Observação: xQueueSendFromISR não possui temporização pois ela necessita de ser o mais breve possivel para não acarretar em problemas na temporização no sistema 
+        - Quando xQueueSendFromISR gera um valor verdadeiro em seu terceiro parametro portYIELD_FROM_ISR devolve o contexto para a tarefa de maior prioridade. Quando xQueueSendFromISR retorna falso no terceiro parametro o contexto é devolvido para a tarefa que anteriormente estava sendo executada, independente da prioridade 
+    - Toda vez que que o token "BaseType_t xHigherPriorityTaskWoken" for inicializado, é indicado pela documentação do FreeRTOS que seja inicializado com o valor pdFALSE 
+
+    - Observação
+~~~c
+    //em todos os projetos
+    #define configSUPPORT_STATIC_ALLOCATION          0
+~~~
+    - void vTask_print(void *pvParameters), trabalha como uma task de controle de outras duas outras tasks que enviam uma struct por referencia 
+
+## (009_MAILBOX)
+    - 
+
+
+
+AULA 03 37:41 - FAZENDO A FUNÇÃO DE INTERRUPÇÃO DE BOTÃO 
 LIVIA
     

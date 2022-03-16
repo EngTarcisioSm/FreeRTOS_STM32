@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
+//#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -53,11 +53,13 @@ typedef enum {
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
 
-osThreadId defaultTaskHandle;
+//osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 QueueHandle_t xQueue;
 QueueHandle_t xQueue_count;
 SemaphoreHandle_t xMutex;
+
+char aux = 0;
 
 struct AMessage {
 	char c_messageID;
@@ -163,8 +165,8 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-//  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);	//removido
-//  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);		//removido
+//  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+//  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -214,6 +216,7 @@ int main(void)
 		vPrintString("Tarefa Task_2 criada com sucesso!\n");
 	}
 
+	vTaskStartScheduler();
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -250,7 +253,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLM = 4;
   RCC_OscInitStruct.PLL.PLLN = 84;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
@@ -347,7 +350,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : DIN_CFIG_Pin */
   GPIO_InitStruct.Pin = DIN_CFIG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(DIN_CFIG_GPIO_Port, &GPIO_InitStruct);
 
@@ -370,6 +373,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(DIN_TARA_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
 
@@ -401,6 +408,35 @@ void vUsartLib_Puts(char *c_data) {
 	//roda todo o buffer até encontrar 0x00
 	while (*c_data) {
 		vUsartLib_Putc(&huart1, *c_data++);
+	}
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+	aux++;
+	/*
+	 * Cria e inicializa a variavel xMessage;
+	 */
+	static struct AMessage xISR_Message =
+	{
+			.c_data = "ISR RTOS by Tarcisio",
+			.c_messageID = 1
+	};
+
+	static struct AMessage * px_isr_message = &xISR_Message;
+
+
+	if( GPIO_Pin == DIN_CFIG_Pin) {
+		// xHigherPriorityTaskWoken -> gera a resposta se de fato foi enviado ou não, não possui temporização
+		// pois essa função deve ocupar o menor tempo possivel
+		xQueueSendFromISR(xQueue, (void *)&px_isr_message, &xHigherPriorityTaskWoken);
+
+		if( xHigherPriorityTaskWoken == pdTRUE ){
+			//Devolve o contexto para a tarefa de maior prioridade no sistema, caso xHigherPriorityTaskWoken seja falso é
+			//retornado para a tarefa que estava sendo executada anteriormente
+			portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+		}
 	}
 }
 //-----------------------------------------------------------------------------
@@ -491,7 +527,7 @@ void vTask_print(void *pvParameters) {
 
 void vTask_blink(void *pvParameters) {
 
-	char  c_buff[250];
+	char  c_buff[200];
 
 	vPrintString("Entrando da Task de debug");
 
@@ -511,6 +547,13 @@ void vTask_blink(void *pvParameters) {
 		vPrintString(c_buff);
 
 		memset(c_buff, 0, sizeof(c_buff));
+
+
+
+		sprintf(c_buff, "%d entradas\n\n", aux);
+		memset(c_buff, 0, sizeof(c_buff));
+		vPrintString(c_buff);
+
 
 		vPrintString("\n\n\n");
 		vTaskDelay(5000 / portTICK_PERIOD_MS);
@@ -567,6 +610,7 @@ void vTask1(void *pvParameters) {
 		xQueueSend( xQueue_count, &x_count_1, portMAX_DELAY);
 
 		sprintf(c_value_char, "vTask_1 envia: %ld \r\n", x_count_1.u32_value);
+		vPrintString(c_value_char);
 
 		x_count_1.u32_value++;
 
@@ -595,6 +639,7 @@ void vTask2(void *pvParameters) {
 		xQueueSend( xQueue_count, &x_count_2, portMAX_DELAY);
 
 		sprintf(c_value_char, "vTask_2 envia: %ld \r\n", x_count_2.u32_value);
+		vPrintString(c_value_char);
 
 		x_count_2.u32_value++;
 

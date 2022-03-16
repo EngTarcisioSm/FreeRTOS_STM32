@@ -64,6 +64,7 @@ void Error_Handler(void);
 #define SEL_0_GPIO_Port GPIOA
 #define DIN_CFIG_Pin GPIO_PIN_10
 #define DIN_CFIG_GPIO_Port GPIOC
+#define DIN_CFIG_EXTI_IRQn EXTI15_10_IRQn
 #define EN_RX_485_Pin GPIO_PIN_2
 #define EN_RX_485_GPIO_Port GPIOD
 #define SEL_1_Pin GPIO_PIN_3
