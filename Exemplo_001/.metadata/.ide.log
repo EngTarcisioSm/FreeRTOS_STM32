@@ -3785,3 +3785,13 @@
 2022-03-16 10:27:53,296 [INFO] ProjectBuilder:3789 - Time for Generating toolchain IDE Files: 2217mS.
 2022-03-16 10:27:53,299 [INFO] ProjectBuilder:2457 - Time for Copy CMSIS : 2mS.
 2022-03-16 10:27:53,306 [INFO] ProjectBuilder:2457 - Time for Copy CMSIS : 0mS.
+2022-03-17 10:28:45,858 [INFO] Activator:177 - 
+
+
+2022-03-17 10:28:45,860 [INFO] Activator:178 - !SESSION log4j initialized
+2022-03-17 10:28:57,250 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] mar 17, 2022 10:28:57 AM org.glassfish.grizzly.http.server.NetworkListener start
+2022-03-17 10:28:57,252 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] INFORMA??ES: Started listener bound to [localhost:1596]
+2022-03-17 10:28:57,252 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 
+2022-03-17 10:28:57,254 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] mar 17, 2022 10:28:57 AM org.glassfish.grizzly.http.server.HttpServer start
+2022-03-17 10:28:57,254 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] INFORMA??ES: [HttpServer] Started.
+2022-03-17 10:28:57,255 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 

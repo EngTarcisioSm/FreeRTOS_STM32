@@ -410,6 +410,38 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 //-----------------------------------------------------------------------------
 
 //funções de tarefas
+void vTask_check_event(void *pvParameters) {
+	vPrintString("vTask_check_event iniciada! \r\n");
+
+	QueueSetMemberHandle_t xHandle_Queue_Set;
+
+	char *pcReceivedString;
+	char ucNumBuff[30];
+	uint32_t ulReceivedUInt32;
+
+	const TickType_t xDelay100ms = pdMS_TO_TICKS( 100 );
+
+	for(;;){
+
+		xHandle_Queue_Set = xQueueSelectFromSet(xQueueSet, portMAX_DELAY);
+
+		if( xHandle_Queue_Set != NULL ) {
+			if( xHandle_Queue_Set == (QueueSetMemberHandle_t) xQueue1) {
+				xQueueReceive(xQueue1, &pcReceivedString, 0);
+				vPrintString(pcReceivedString);
+			} else if( xHandle_Queue_Set == (QueueSetMemberHandle_t) xQueue2 ) {
+				xQueueReceive(xQueue2, &pcReceivedString, 0);
+				vPrintString(pcReceivedString);
+			} else if( xHandle_Queue_Set == (QueueSetMemberHandle_t) xQueue3 ) {
+				xQueueReceive(xQueue3, &ulReceivedUInt32, 0);
+				sprintf(ucNumBuff, "ulUINT32: %lu\r\n", ulReceivedUInt32);
+				vPrintString(ucNumBuff);
+			}
+		}
+	}
+	vTaskDelete(NULL);
+}
+
 void vTask1(void *pvParameters) {
 
 	vPrintString("vTask_1 iniciada! \r\n");
@@ -435,8 +467,21 @@ void vTask1(void *pvParameters) {
 
 void vTask2(void *pvParameters) {
 
+	vPrintString("vTask_2 inicada!\r\n");
+	const TickType_t xBlockTime = pdMS_TO_TICKS( 1000 );
+
+	const char * const pc_message = "Mensagem da task2 para Queue Set! \r\n";
 
 	for(;;){
+		vTaskDelay(xBlockTime);
+		/*
+		 * Envia a cadeia de caracteres desta tarefa para xQueue1
+		 * Não é necessário usar um tempo de bloquei, mesmo que a fila possa conter apenas um item.
+		 * Isso ocorre porque a prioridade da tarefa que lê da fila é superior a prioridade da fila,
+		 * portanto a fila ja estará vazia novamente no momento em que a chamada para xQueueSend()
+		 * retornar. O tempo do bloco é definido como 0.
+		 */
+		xQueueSend(xQueue2, &pc_message, 0);
 
 	}
 	vTaskDelete(NULL);
@@ -444,8 +489,22 @@ void vTask2(void *pvParameters) {
 
 void vTask3(void *pvParameters) {
 
+	vPrintString("vTask_3 inicada!\r\n");
+	const TickType_t xBlockTime = pdMS_TO_TICKS( 500 );
+
+	uint32_t ulReceivedUInt32 = 0;
 
 	for(;;){
+		vTaskDelay(xBlockTime);
+		/*
+		 * Envia a cadeia de caracteres desta tarefa para xQueue1
+		 * Não é necessário usar um tempo de bloquei, mesmo que a fila possa conter apenas um item.
+		 * Isso ocorre porque a prioridade da tarefa que lê da fila é superior a prioridade da fila,
+		 * portanto a fila ja estará vazia novamente no momento em que a chamada para xQueueSend()
+		 * retornar. O tempo do bloco é definido como 0.
+		 */
+		xQueueSend(xQueue3, &ulReceivedUInt32, 0);
+		ulReceivedUInt32++;
 
 	}
 	vTaskDelete(NULL);
