@@ -387,14 +387,14 @@ void vPrintString(char *pc_uartSend_f) {
 	HAL_GPIO_WritePin(SEL_0_GPIO_Port, SEL_0_Pin, Bit_RESET);
 	HAL_GPIO_WritePin(SEL_1_GPIO_Port, SEL_1_Pin, Bit_RESET);
 	HAL_GPIO_WritePin(EN_RX_485_GPIO_Port, EN_RX_485_Pin, Bit_RESET);
-	taskENTER_CRITICAL();	//removido
-	//xSemaphoreTake(xMutex, portMAX_DELAY);
+	//taskENTER_CRITICAL();	//removido
+	xSemaphoreTake(xMutex, portMAX_DELAY);
 	{
 		vUsartLib_Puts(pc_uartSend_f);
 	}
-	taskEXIT_CRITICAL();		//removido
+	//taskEXIT_CRITICAL();		//removido
 	//acionamentos necessários para chavear e acionar o rs485 em modo de recepção
-	//xSemaphoreGive(xMutex);
+	xSemaphoreGive(xMutex);
 	HAL_GPIO_WritePin(SEL_0_GPIO_Port, SEL_0_Pin, Bit_SET);
 	HAL_GPIO_WritePin(SEL_1_GPIO_Port, SEL_1_Pin, Bit_SET);
 	HAL_GPIO_WritePin(EN_RX_485_GPIO_Port, EN_RX_485_Pin, Bit_SET);

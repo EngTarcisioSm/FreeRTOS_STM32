@@ -185,7 +185,16 @@ ___
             - tempo de espera para que todas os bits esejam disponiveis 
 
 
-## (011_EVENT SYNC)
+## (012_EVENT SYNC)
+ - Semelhante ao event group na criação, entretanto trata de mais de um bit 
+ - Funções:
+    - xEventGroupSync(xEventGroup, uxBitsToSet, uxBitsToWaitFor, xTicksToWait)
+        - 1: Handle do eventgroup
+        - 2: bit a ser setado 
+        - 3: resposta que se deseja dos bits setados 
+        - 4: tempo de espera 
+
+        - possui retorno informando os bits setados, podendo esse retorno ser ou não utilizado
 
 
 
@@ -195,4 +204,3 @@ ___
 
 ~~~
 
-1:31:15 aula 3 - PASSANDO O CÓDIGO PARA A CUBEIDE
