@@ -129,5 +129,70 @@ ___
 - A vantagem de se utilizar QueueSet é gerenciar váras Queues com uma unica função
 
 ## (011_EVENT GROUPS)
+- Para utilização de eventgroups utilizar o include 
+    ~~~c
+        #include "event_groups.h" 	//incluido
+    ~~~
+- Para auxiliar na checagem dos eventgroups utiliza-se os defines:
+    ~~~c
+        #define BIT_0 (1 << 0)
+        #define BIT_1 (1 << 1)
+        #define BIT_2 (1 << 2)
+        #define BIT_3 (1 << 3)
+        #define BIT_4 (1 << 4)
+        #define BIT_5 (1 << 5)
+        #define BIT_6 (1 << 6)
+        #define BIT_7 (1 << 7)
+        #define BIT_8 (1 << 8)
+        #define BIT_9 (1 << 9)
+        #define BIT_10 (1 << 10)
+        #define BIT_11 (1 << 11)
+        #define BIT_12 (1 << 12)
+        #define BIT_13 (1 << 13)
+        #define BIT_14 (1 << 14)
+        #define BIT_15 (1 << 15)
+        #define BIT_16 (1 << 16)
+        #define BIT_17 (1 << 17)
+        #define BIT_18 (1 << 18)
+        #define BIT_19 (1 << 19)
+        #define BIT_20 (1 << 20)
+        #define BIT_21 (1 << 21)
+        #define BIT_22 (1 << 22)
+        #define BIT_23 (1 << 23)
+    ~~~
+- É criado o Handle para utilização da função 
+    ~~~c 
+        static EventGroupHandle_t xHandle_Event_Group;
+    ~~~
+- É necessário criar o eventgroup com a função descrita abaixo:
+    ~~~c
+        xHandle_Event_Group = xEventGroupCreate();
+    ~~~
+- EventGroups podem ser utilizadas dentro de ISR
+- Funções importantes:
+    - xEventGroupSetBits()
+        - Escreve bits dentro do eventgroup
+        - 2 parametros 
+            - 1 parametro: handle de eventgroup
+            - 2 parametro: bit a ser escrito com base nos defines acima mensionados 
+    - xEventGroupWaitBits()
+        - retorna os bits que estão escritos no event group, o tipo desse retorno é "EventBits_t"
+        - possui 5 atributos
+            - parametro 1 : handle do eventgroup
+            - parametro 2 : bits a serem escritos
+            - parametro 3 : valor booleano, pdTRUE, assim que os bits forem lidos eles serão apagados dentro do eventgroup se pdFALSE, os bits não são resetados
+            - parametro 4 : em pdTRUE todos os bits escolhidos na leitura deve estar em alto, pdFASE não há necessidade de que todos bits avaliados estejam em alto. Para a leitura de apenas 1 bit, esse parametro tanto fazer ser true ou false 
+            - tempo de espera para que todas os bits esejam disponiveis 
 
-1:01:29 aula 3 - PASSANDO O CÓDIGO PARA A CUBEIDE
+
+## (011_EVENT SYNC)
+
+
+
+
+
+~~~c
+
+~~~
+
+1:31:15 aula 3 - PASSANDO O CÓDIGO PARA A CUBEIDE

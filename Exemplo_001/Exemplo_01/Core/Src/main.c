@@ -23,14 +23,15 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "FreeRTOS.h"   //inclusão
-#include "task.h"       //inclusão
-#include "queue.h"      //inclusão
-#include "semphr.h"     //inclusão
+#include "FreeRTOS.h"   	//inclusão
+#include "task.h"       	//inclusão
+#include "queue.h"      	//inclusão
+#include "semphr.h"     	//inclusão
+#include "event_groups.h" 	//incluido
 
-#include <stdio.h>      //inclusão
-#include <string.h>     //inclusão
-#include <stdint.h>     //incluso
+#include <stdio.h>      	//inclusão
+#include <string.h>     	//inclusão
+#include <stdint.h>     	//incluso
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,6 +44,30 @@ typedef enum {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define BIT_0 (1 << 0)
+#define BIT_1 (1 << 1)
+#define BIT_2 (1 << 2)
+#define BIT_3 (1 << 3)
+#define BIT_4 (1 << 4)
+#define BIT_5 (1 << 5)
+#define BIT_6 (1 << 6)
+#define BIT_7 (1 << 7)
+#define BIT_8 (1 << 8)
+#define BIT_9 (1 << 9)
+#define BIT_10 (1 << 10)
+#define BIT_11 (1 << 11)
+#define BIT_12 (1 << 12)
+#define BIT_13 (1 << 13)
+#define BIT_14 (1 << 14)
+#define BIT_15 (1 << 15)
+#define BIT_16 (1 << 16)
+#define BIT_17 (1 << 17)
+#define BIT_18 (1 << 18)
+#define BIT_19 (1 << 19)
+#define BIT_20 (1 << 20)
+#define BIT_21 (1 << 21)
+#define BIT_22 (1 << 22)
+#define BIT_23 (1 << 23)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -55,11 +80,9 @@ UART_HandleTypeDef huart1;
 
 //osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
-//criação de várias queues ao mesmo tempo
-static QueueHandle_t xQueue1 = NULL, xQueue2 = NULL, xQueue3 = NULL;
+static EventGroupHandle_t xHandle_Event_Group;
 
 //criação de uma variavel que aloca conjunto de queues
-static QueueSetHandle_t xQueueSet = NULL;
 
 SemaphoreHandle_t xMutex;
 
@@ -130,6 +153,7 @@ int main(void)
   /* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
+	xHandle_Event_Group = xEventGroupCreate();
 
   /* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
@@ -137,31 +161,6 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-	//criação da queue
-	 if((xQueue1 = xQueueCreate(1, sizeof(char *))) == NULL) {
-		 //queue não foi possivel de ser criada gerando erro
-		 vPrintString("Não foi possivel alocar xQueue1");
-	 } else {
-		 if((xQueue2 = xQueueCreate(1, sizeof(char *))) == NULL) {
-			 //queue não foi possivel de ser criada gerando erro
-			 vPrintString("Não foi possivel alocar xQueue2");
-		 } else {
-			 if((xQueue3 = xQueueCreate(1, sizeof(uint32_t *))) == NULL) {
-				 //queue não foi possivel de ser criada gerando erro
-				 vPrintString("Não foi possivel alocar xQueue3");
-			 } else {
-				 if((xQueueSet = xQueueCreateSet(1 * 3)) == NULL) {
-					 //queue não foi possivel de ser criada gerando erro
-					 vPrintString("Não foi possivel alocar xQueueSet");
-				 } else {
-					 xQueueAddToSet(xQueue1, xQueueSet);
-					 xQueueAddToSet(xQueue2, xQueueSet);
-					 xQueueAddToSet(xQueue3, xQueueSet);
-					 vPrintString("xQueueSet Preenchido");
-				 }
-			 }
-		 }
-	 }
 
   /* USER CODE END RTOS_QUEUES */
 
@@ -187,14 +186,14 @@ int main(void)
 		vPrintString("Tarefa Task_2 criada com sucesso!\n");
 	}
 
-	if ((xTaskCreate(vTask3, "task_3", configMINIMAL_STACK_SIZE, NULL, 1, NULL))
-			!= pdTRUE) {
-		vPrintString("Não foi possivel alocar tarefa Task_3 no escalonador\n");
-	} else {
-		vPrintString("Tarefa Task_3 criada com sucesso!\n");
-	}
+//	if ((xTaskCreate(vTask3, "task_3", configMINIMAL_STACK_SIZE, NULL, 1, NULL))
+//			!= pdTRUE) {
+//		vPrintString("Não foi possivel alocar tarefa Task_3 no escalonador\n");
+//	} else {
+//		vPrintString("Tarefa Task_3 criada com sucesso!\n");
+//	}
 
-	if ((xTaskCreate(vTask_check_event, "check_event", configMINIMAL_STACK_SIZE * 2, NULL, 2, NULL)) != pdTRUE) {
+	if ((xTaskCreate(vTask_check_event, "check_event", configMINIMAL_STACK_SIZE, NULL, 2, NULL)) != pdTRUE) {
 		vPrintString("Não foi possivel alocar tarefa vTask_Print_count no escalonador.");
 	} else {
 		vPrintString("Tarefa check_event criada com sucesso!\n");
@@ -411,32 +410,37 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 //funções de tarefas
 void vTask_check_event(void *pvParameters) {
+
 	vPrintString("vTask_check_event iniciada! \r\n");
 
-	QueueSetMemberHandle_t xHandle_Queue_Set;
-
-	char *pcReceivedString;
-	char ucNumBuff[30];
-	uint32_t ulReceivedUInt32;
-
-	const TickType_t xDelay100ms = pdMS_TO_TICKS( 100 );
+	//guarda os bits retornados por um grupo de eventos
+	EventBits_t uxBits;
 
 	for(;;){
 
-		xHandle_Queue_Set = xQueueSelectFromSet(xQueueSet, portMAX_DELAY);
+		/*
+		 * A função xEventGroupWaitBits faz com que a tarefa entre em estado de bloqueado por
+		 * tempo definido ou indeterminado até que um evento de sinalização de um BIT do grupo de
+		 * evento seja gerado de forma externa por uma task ou ISR
+		 */
+		uxBits = xEventGroupWaitBits(
+				xHandle_Event_Group,	/*event group informado*/
+				BIT_0 | BIT_4,			/*indica quais bits esta aguardando serem jogados para nivel alto*/
+				pdTRUE,					/*assim que lidos os bits se 1 vão para zero*/
+				pdTRUE,					/*É necessário esperar que todos os bits escolhidos estejam em nivel alto, se pdFALSE não é necessário esperar todos bits */
+				portMAX_DELAY);			/* Aguarda indefinidamente por uma mudança de bit*/
 
-		if( xHandle_Queue_Set != NULL ) {
-			if( xHandle_Queue_Set == (QueueSetMemberHandle_t) xQueue1) {
-				xQueueReceive(xQueue1, &pcReceivedString, 0);
-				vPrintString(pcReceivedString);
-			} else if( xHandle_Queue_Set == (QueueSetMemberHandle_t) xQueue2 ) {
-				xQueueReceive(xQueue2, &pcReceivedString, 0);
-				vPrintString(pcReceivedString);
-			} else if( xHandle_Queue_Set == (QueueSetMemberHandle_t) xQueue3 ) {
-				xQueueReceive(xQueue3, &ulReceivedUInt32, 0);
-				sprintf(ucNumBuff, "ulUINT32: %lu\r\n", ulReceivedUInt32);
-				vPrintString(ucNumBuff);
-			}
+		/*
+		 * Após xEventGroupWaitBits liberar o fluxo de programa para task, ele alimenta a
+		 * variavel uxBits com os sinalizadores de evento de 24bits e seus respectios
+		 * niveis que são checados abaixo por meio de uma mascara
+		 */
+		if(uxBits & (BIT_0 | BIT_4) == (BIT_0 | BIT_4)) {
+			vPrintString("Ambos os grupos de eventos foram sinalizados!\r\n");
+		} else if (uxBits & (BIT_0) != 0) {
+			vPrintString("Grupo de evento para o BIT_0 foi sinalizado!\r\n");
+		} else if (uxBits & (BIT_4) != 0) {
+			vPrintString("Grupo de evento para o BIT_4 foi sinalizado!\r\n");
 		}
 	}
 	vTaskDelete(NULL);
@@ -446,21 +450,14 @@ void vTask1(void *pvParameters) {
 
 	vPrintString("vTask_1 iniciada! \r\n");
 
-	const TickType_t xBlockTime = pdMS_TO_TICKS( 500 );
-
-	const char * const pc_message = "Mensagem da task1 para Queue Set! \r\n";
 
 	for(;;){
 
-		vTaskDelay(xBlockTime);
-		/*
-		 * Envia a cadeia de caracteres desta tarefa para xQueue1
-		 * Não é necessário usar um tempo de bloquei, mesmo que a fila possa conter apenas um item.
-		 * Isso ocorre porque a prioridade da tarefa que lê da fila é superior a prioridade da fila,
-		 * portanto a fila ja estará vazia novamente no momento em que a chamada para xQueueSend()
-		 * retornar. O tempo do bloco é definido como 0.
-		 */
-		xQueueSend(xQueue1, &pc_message, 0);
+		vPrintString("BIT_0 Setado!\r\n");
+
+		xEventGroupSetBits(xHandle_Event_Group, BIT_0);
+
+		vTaskDelay( 10000 / portTICK_PERIOD_MS);
 	}
 	vTaskDelete(NULL);
 }
@@ -468,21 +465,13 @@ void vTask1(void *pvParameters) {
 void vTask2(void *pvParameters) {
 
 	vPrintString("vTask_2 inicada!\r\n");
-	const TickType_t xBlockTime = pdMS_TO_TICKS( 1000 );
-
-	const char * const pc_message = "Mensagem da task2 para Queue Set! \r\n";
 
 	for(;;){
-		vTaskDelay(xBlockTime);
-		/*
-		 * Envia a cadeia de caracteres desta tarefa para xQueue1
-		 * Não é necessário usar um tempo de bloquei, mesmo que a fila possa conter apenas um item.
-		 * Isso ocorre porque a prioridade da tarefa que lê da fila é superior a prioridade da fila,
-		 * portanto a fila ja estará vazia novamente no momento em que a chamada para xQueueSend()
-		 * retornar. O tempo do bloco é definido como 0.
-		 */
-		xQueueSend(xQueue2, &pc_message, 0);
+		vPrintString("BIT_4 Setado!\r\n");
 
+		xEventGroupSetBits(xHandle_Event_Group, BIT_4);
+
+		vTaskDelay( 5000 / portTICK_PERIOD_MS);
 	}
 	vTaskDelete(NULL);
 }
@@ -490,26 +479,12 @@ void vTask2(void *pvParameters) {
 void vTask3(void *pvParameters) {
 
 	vPrintString("vTask_3 inicada!\r\n");
-	const TickType_t xBlockTime = pdMS_TO_TICKS( 500 );
-
-	uint32_t ulReceivedUInt32 = 0;
 
 	for(;;){
-		vTaskDelay(xBlockTime);
-		/*
-		 * Envia a cadeia de caracteres desta tarefa para xQueue1
-		 * Não é necessário usar um tempo de bloquei, mesmo que a fila possa conter apenas um item.
-		 * Isso ocorre porque a prioridade da tarefa que lê da fila é superior a prioridade da fila,
-		 * portanto a fila ja estará vazia novamente no momento em que a chamada para xQueueSend()
-		 * retornar. O tempo do bloco é definido como 0.
-		 */
-		xQueueSend(xQueue3, &ulReceivedUInt32, 0);
-		ulReceivedUInt32++;
-
+		vTaskDelay( 5000 / portTICK_PERIOD_MS);
 	}
 	vTaskDelete(NULL);
 }
-
 
 
 void vTask_blink(void *pvParameters) {
