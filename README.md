@@ -294,8 +294,11 @@ ___
             Tmr Svc        <HT>	B<HT>	5<HT>	114<HT>	3<CR><LF>
         ~~~
 
-
-
+## (014_2_Software_Timer)
+- Reativação  do oneTime a cada 10 estouros do timer AutoReload 
+- OneShot alterado para 100ms
+- Os Handle devem realocados globalmente para ser visualizados em outras funções de callback
+- Sempre verificar o consumo de memoria por "Tmr Svc"
 
 
 

@@ -503,7 +503,7 @@ static void prvAutoReloadTimerCallback( TimerHandle_t xTimer) {
 
 	if(uc_count == 20) {
 		uc_count = 0;
-		vPrintString("Oneshot Time Reativado!\n");
+		vPrintString("Oneshot Time Reativado!");
 		xTimerReset( xOneShotTimer, 0);
 	}
 
