@@ -203,6 +203,96 @@ ___
 - A tarefa vTask_check_event não testa um evento, ela gera os eventos;
 - Uma tarefa pode ser desbloqueada interminadamente quando o terceiro parametro de "xEventGroupWaitBits" é colocado em pdFALSE, e pode ser bloqueado novamente com a função "xEventGroupClearBits"
 
+## (014_Software_Timer)
+- Configuração FreeRTOSConfig.h
+    ~~~c
+        #define configUSE_TIMERS						1   //habilitar o timer 
+        #define configTIMER_TASK_PRIORITY				5   //configurar nivel de prioridade
+        #define configTIMER_QUEUE_LENGTH				10  //tamanho do buffer indicando quantidade que os timersiop
+        #define configTIMER_TASK_STACK_DEPTH			256 //tamanho da memoria de guardar contextos em words
+    ~~~
+- Inclusão em main.c
+    ~~~c
+        #include "timers.h"			//incluido
+    ~~~
+
+    - Definir a quantidade de ticks para configurar o timer 
+        ~~~c
+            #define mainONE_SHOT_TIMER_PERIOD 		pdMS_TO_TICKS( 3333 )
+            #define mainAUTO_RELOAD_TIMER_PERIOD	pdMS_TO_TICKS( 500 )
+        ~~~
+        - A macro converte o valor passado em ticks para as funções que necessitam desse valor e armazena dentro dos respectivos defines 
+    - Criado os prototipos das funções de callback 
+        ~~~c
+            static void prvOneShotTimerCallback( TimerHandle_t xTimer );
+            static void prvAutoReloadTimerCallback( TimerHandle_t xTimer );
+        ~~~
+        - Os parametros são os Handle dos timers
+    - Criação dos handle dos timers 
+        ~~~c
+            TimerHandle_t xAutoReloadTimer, xOneShotTimer;
+        ~~~
+    - Criação de variáveis para checar se os timers foram inicalizados com sucesso 
+        ~~~c
+            BaseType_t xTimer1Started, xTimer2Started;
+        ~~~
+    - Criação do timer com a função xTimerCreate, recebe 5 parametros 
+        - 1: nome do timer (string - de preferencia um nome pequeno)
+        - 2: periodo em ticks que se deseja configurar o timer 
+        - 3: 
+            - pdFALSE -> configurado como estouro unico 
+            - pdTRUE -> configurado como reinicialização automatico do timer 
+        - 4: possibilidade de criação de um ID (torna-se desnecessário pois o contextos dos timers esta sendo salvo dentro das variaveis do timo TimerHandle_t)
+        - 5: Função de callback a qual deve ser executada ao ocorrer o estouro do timer 
+        ~~~c
+            /*Cria timer com a configuração de disparo único*/
+            xOneShotTimer = xTimerCreate(
+                    "OneShot", 					/* Nome do texto para o cronômetro do software - não usado pelo FreeRTOS */
+                    mainONE_SHOT_TIMER_PERIOD, 	/* Periodo de ISR do timer em ticks */
+                    pdFALSE, 					   /* Se pdTRUE for passado como parametro ele configura reinicialização automática
+                                                    * Se pdFALSE for passado como parametro ele configura como disparo único
+                                                    */
+                    0, 							/* Não utilizamos ID de timer neste exemplo */
+                    prvOneShotTimerCallback 		/* Função de callback deve ser passado nesse parametro para seja processado a ISR */
+                    );
+
+            /* Cria um software timer com a configuração de reinicialização automática */
+            xAutoReloadTimer = xTimerCreate(
+                    "AutoReload",					/*Nome do texto para o cronômetro do software - não usado pelo FreeRTOS...*/
+                    mainAUTO_RELOAD_TIMER_PERIOD,	/*Periodo de ISR do timer em ticks*/
+                    pdTRUE,						/* Se pdTRUE for passado como parametro ele configura reinicialização automática
+                                                    * Se pdFALSE for passado como parametro ele configura como disparo único
+                                                    */
+                    0,							/*Não utilizado ID de timer neste exemplo*/
+                    prvAutoReloadTimerCallback	/*Função de callback deve ser passado nesse parametro para seja processado a ISR*/
+                    );
+        ~~~ 
+    - Como os timers são objetos do freeRTOS pois são criados dinamicamente, é necessário vertificar se de fato ocorreu a criação dos timers inseridos 
+        ~~~c
+            if ((xOneShotTimer != NULL) && (xAutoReloadTimer != NULL)) {
+        ~~~
+    - Após a verificação dos objetos criados é necessário iniciar os timers com a função xTimerStart, passando o handle do timer e em seguida um possivel atraso para inicialização do mesmo 
+        ~~~c
+            xTimer1Started = xTimerStart( xOneShotTimer, 0);
+	        xTimer2Started = xTimerStart( xAutoReloadTimer, 0);
+        ~~~
+    - É possivel verificar se os timers foram criados com sucesso, é praticamente impossivel depois desses passos os timers não ser inicializados (se torna não necessário essa parte)
+        ~~~c
+            if((xTimer1Started == pdPASS) && (xTimer2Started == pdPASS)) {
+        ~~~
+
+    - Retorna a quantidade de ticks
+        ~~~c
+            xTimeNow = xTaskGetTickCount();
+        ~~~
+    
+    - A task "Tmr Svc" é a task daemon 
+        ~~~c
+            Task-------------State-----Prio------Stack---Num<CR><LF>
+            Task Blink     <HT>	X<HT>	1<HT>	82<HT>	1<CR><LF>
+            IDLE           <HT>	R<HT>	0<HT>	108<HT>	2<CR><LF>
+            Tmr Svc        <HT>	B<HT>	5<HT>	114<HT>	3<CR><LF>
+        ~~~
 
 
 
@@ -211,7 +301,6 @@ ___
 
 
 
-~~~c
 
-~~~
+
 
