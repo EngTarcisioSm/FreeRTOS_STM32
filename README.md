@@ -197,6 +197,17 @@ ___
         - possui retorno informando os bits setados, podendo esse retorno ser ou não utilizado
 
 
+## (013_Eventgroups)
+- Manipular várias tarefas com eventgroups 
+- No exemplo anterior 3 tarefas eram utilizadas para manipular 1, neste exemplo 1 tarefa manipula 3
+- A tarefa vTask_check_event não testa um evento, ela gera os eventos;
+- Uma tarefa pode ser desbloqueada interminadamente quando o terceiro parametro de "xEventGroupWaitBits" é colocado em pdFALSE, e pode ser bloqueado novamente com a função "xEventGroupClearBits"
+
+
+
+
+
+
 
 
 

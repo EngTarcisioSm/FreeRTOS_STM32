@@ -74,7 +74,6 @@ typedef enum {
 #define TASK_2_BIT (1 << 2)
 #define TASK_3_BIT (1 << 3)
 
-#define ALL_SYNC_BITS ( TASK_0_BIT | TASK_1_BIT | TASK_2_BIT | TASK_3_BIT)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -91,7 +90,7 @@ static EventGroupHandle_t xHandle_Event_Group;
 
 //criação de uma variavel que aloca conjunto de queues
 
-SemaphoreHandle_t xMutex;
+//SemaphoreHandle_t xMutex;
 
 //funções de escrita serial
 void vPrintString(char *pc_uartSend_f);
@@ -154,7 +153,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
-	xMutex = xSemaphoreCreateMutex();
+//	xMutex = xSemaphoreCreateMutex();
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -200,7 +199,7 @@ int main(void)
 		vPrintString("Tarefa Task_3 criada com sucesso!\n");
 	}
 
-	if ((xTaskCreate(vTask_check_event, "check_event", configMINIMAL_STACK_SIZE, NULL, 2, NULL)) != pdTRUE) {
+	if ((xTaskCreate(vTask_check_event, "check_event", configMINIMAL_STACK_SIZE, NULL, 1, NULL)) != pdTRUE) {
 		vPrintString("Não foi possivel alocar tarefa vTask_Print_count no escalonador.");
 	} else {
 		vPrintString("Tarefa check_event criada com sucesso!\n");
@@ -419,30 +418,21 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 void vTask_check_event(void *pvParameters) {
 
 	vPrintString("vTask_check_event iniciada! \r\n");
-
-	EventBits_t uxReturn;
-	TickType_t xTicksToWait = 10000 / portTICK_PERIOD_MS;
-
 	for(;;){
+		vPrintString("Setando evento do BIT_0!\r\n");
+		xEventGroupSetBits(xHandle_Event_Group, BIT_0);
+		vTaskDelay( 1000 / portTICK_PERIOD_MS);
 
-		/* É definido o bit 0 no grupo de eventos na chamada xEventGroupSync para observar que esta tarefa atingiu o
-			ponto de sincronização. As outras duas tarefas definirão os outros dois bits definidos
-			por ALL_SYNC_BITS. Todas as três tarefas atingiram a sincronização no momento em que é
-			apontado todos os ALL_SYNC_BITS como nivel alto. Aguarde no máximo 500ms para isso acontecer. */
+		vPrintString("Setando evento do BIT_1!\r\n");
+		xEventGroupSetBits(xHandle_Event_Group, BIT_0);
+		vTaskDelay( 1000 / portTICK_PERIOD_MS);
 
-		uxReturn = xEventGroupSync(
-				xHandle_Event_Group,
-				TASK_0_BIT,
-				ALL_SYNC_BITS,
-				xTicksToWait);
+		vPrintString("Setando evento do BIT_2!\r\n");
+		xEventGroupSetBits(xHandle_Event_Group, BIT_0);
+		vTaskDelay( 1000 / portTICK_PERIOD_MS);
 
-		if ((uxReturn & ALL_SYNC_BITS) == ALL_SYNC_BITS){
-			/* Todas as três tarefas atingiram o ponto de sincronização antes da chamada
-				para xEventGroupSync () atingir o tempo limite. */
-			vPrintString("Todos os bits foram sincronizados! \r\n");
-		} else {
-			vPrintString("Sincronização não executada! \r\n");
-		}
+		vTaskDelay( 3000 / portTICK_PERIOD_MS);
+
 	}
 	vTaskDelete(NULL);
 }
@@ -450,19 +440,27 @@ void vTask_check_event(void *pvParameters) {
 void vTask1(void *pvParameters) {
 
 	vPrintString("vTask_1 iniciada! \r\n");
-
-
 	for(;;){
+		/* A função xEventGroupWaitBits faz com que a tarefa entre em estado
+		 * de bloqueado por tempo definido ou indeterminado ate que um evento
+		 * de sinalização de um BIT do grupo de evento seja gerado de forma
+		 * externa por uma task ou ISR
+		 */
+		xEventGroupWaitBits(
+				xHandle_Event_Group, /*O event group informado*/
+				BIT_0, /*Indica quais esta aguardando serem jogados para nivel alto*/
+				pdTRUE, /*BIT_0 será jogado para nivel baixo após sair da função xEventGroupWaitBits*/
+				pdFALSE, /*Não esperar que todos os bits sejam em nivel alto
+				 	 	  * como é um bit apenas é irrelevante
+				 	 	  */
+				portMAX_DELAY);
 
-		/* É definido o bit 1 no grupo de eventos na chamada xEventGroupSync para observar que esta tarefa atingiu o
-			ponto de sincronização. As outras duas tarefas definirão os outros dois bits definidos
-			por ALL_SYNC_BITS. Todas as três tarefas atingiram a sincronização no momento em que é
-			apontado todos os ALL_SYNC_BITS como nivel alto.*/
-		xEventGroupSync(xHandle_Event_Group, TASK_1_BIT, ALL_SYNC_BITS, portMAX_DELAY);
-
-		vPrintString("BIT_1 Setado e sincronizado !\r\n");
-
-		vTaskDelay( 5000 / portTICK_PERIOD_MS );
+		/*
+		 * Nota-se que diferente do exemplo anteriormente usado, não precisamos
+		 * checar quais bits foram jogados para nível alto pois trabalhamos
+		 * com apenas um bit neste momento
+		 */
+		vPrintString("BIT_0 Setado! \r\n\n");
 	}
 	vTaskDelete(NULL);
 }
@@ -472,16 +470,26 @@ void vTask2(void *pvParameters) {
 	vPrintString("vTask_2 inicada!\r\n");
 
 	for(;;){
+		/* A função xEventGroupWaitBits faz com que a tarefa entre em estado
+		 * de bloqueado por tempo definido ou indeterminado ate que um evento
+		 * de sinalização de um BIT do grupo de evento seja gerado de forma
+		 * externa por uma task ou ISR
+		 */
+		xEventGroupWaitBits(
+				xHandle_Event_Group, /*O event group informado*/
+				BIT_1, /*Indica quais esta aguardando serem jogados para nivel alto*/
+				pdTRUE, /*BIT_0 será jogado para nivel baixo após sair da função xEventGroupWaitBits*/
+				pdFALSE, /*Não esperar que todos os bits sejam em nivel alto
+				 	 	  * como é um bit apenas é irrelevante
+				 	 	  */
+				portMAX_DELAY);
 
-		/* É definido o bit 1 no grupo de eventos na chamada xEventGroupSync para observar que esta tarefa atingiu o
-			ponto de sincronização. As outras duas tarefas definirão os outros dois bits definidos
-			por ALL_SYNC_BITS. Todas as três tarefas atingiram a sincronização no momento em que é
-			apontado todos os ALL_SYNC_BITS como nivel alto.*/
-		xEventGroupSync(xHandle_Event_Group, TASK_2_BIT, ALL_SYNC_BITS, portMAX_DELAY);
-
-		vPrintString("BIT_2 Setado e sincronizado !\r\n");
-
-		vTaskDelay( 5000 / portTICK_PERIOD_MS );
+		/*
+		 * Nota-se que diferente do exemplo anteriormente usado, não precisamos
+		 * checar quais bits foram jogados para nível alto pois trabalhamos
+		 * com apenas um bit neste momento
+		 */
+		vPrintString("BIT_1 Setado! \r\n\n");
 	}
 	vTaskDelete(NULL);
 }
@@ -491,15 +499,26 @@ void vTask3(void *pvParameters) {
 	vPrintString("vTask_3 inicada!\r\n");
 
 	for(;;){
-		/* É definido o bit 1 no grupo de eventos na chamada xEventGroupSync para observar que esta tarefa atingiu o
-			ponto de sincronização. As outras duas tarefas definirão os outros dois bits definidos
-			por ALL_SYNC_BITS. Todas as três tarefas atingiram a sincronização no momento em que é
-			apontado todos os ALL_SYNC_BITS como nivel alto.*/
-		xEventGroupSync(xHandle_Event_Group, TASK_3_BIT, ALL_SYNC_BITS, portMAX_DELAY);
+		/* A função xEventGroupWaitBits faz com que a tarefa entre em estado
+		 * de bloqueado por tempo definido ou indeterminado ate que um evento
+		 * de sinalização de um BIT do grupo de evento seja gerado de forma
+		 * externa por uma task ou ISR
+		 */
+		xEventGroupWaitBits(
+				xHandle_Event_Group, /*O event group informado*/
+				BIT_2, /*Indica quais esta aguardando serem jogados para nivel alto*/
+				pdTRUE, /*BIT_0 será jogado para nivel baixo após sair da função xEventGroupWaitBits*/
+				pdFALSE, /*Não esperar que todos os bits sejam em nivel alto
+				 	 	  * como é um bit apenas é irrelevante
+				 	 	  */
+				portMAX_DELAY);
 
-		vPrintString("BIT_3 Setado e sincronizado !\r\n");
-
-		vTaskDelay( 5000 / portTICK_PERIOD_MS );
+		/*
+		 * Nota-se que diferente do exemplo anteriormente usado, não precisamos
+		 * checar quais bits foram jogados para nível alto pois trabalhamos
+		 * com apenas um bit neste momento
+		 */
+		vPrintString("BIT_2 Setado! \r\n\n");
 	}
 	vTaskDelete(NULL);
 }
