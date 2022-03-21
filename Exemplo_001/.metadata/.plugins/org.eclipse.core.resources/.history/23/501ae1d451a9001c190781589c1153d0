@@ -544,7 +544,7 @@ static void prvTimerCallback( TimerHandle_t xTimer ) {
 		vPrintString(txt);
 	} else {
 		/*Se não foi o xOneShotTimer que deu a ISR, chegamos a esse ponto indicando que o autoreload foi responsavel pela ISR*/
-		sprintf(txt, "Auto-reload Timer callback. %ld\r\n", xTimeNow);
+		sprint(txt, "Auto-reload Timer callback. %ld\r\n", xTimeNow);
 		vPrintString(txt);
 
 		if( ulExecutionCount == 50 ) {
@@ -554,7 +554,7 @@ static void prvTimerCallback( TimerHandle_t xTimer ) {
 			 * gerenciar os SoftTimers, portanto, nunca poderemos chamar funções bloqueantes dentro de Timers, e é por esse motivo
 			 * que tratamos ele como ISRs, em xTimeStop utilizamos 0 como argumento para existir bloqueio
 			 */
-			xTimerStop( xTimer, 0);
+			xTimeStop( xTimer, 0);
 		}
 	}
 }

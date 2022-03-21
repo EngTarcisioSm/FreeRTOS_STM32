@@ -77,7 +77,7 @@ typedef enum {
 
 #define ALL_SYNC_BITS ( TASK_0_BIT | TASK_1_BIT | TASK_2_BIT | TASK_3_BIT )
 
-#define mainONE_SHOT_TIMER_PERIOD 		pdMS_TO_TICKS( 3333 )
+#define mainONE_SHOT_TIMER_PERIOD 		pdMS_TO_TICKS( 100 )
 #define mainAUTO_RELOAD_TIMER_PERIOD	pdMS_TO_TICKS( 500 )
 
 /* USER CODE END PD */
@@ -93,7 +93,6 @@ UART_HandleTypeDef huart1;
 //osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 //static EventGroupHandle_t xHandle_Event_Group;
-TimerHandle_t xAutoReloadTimer, xOneShotTimer;
 
 //criação de uma variavel que aloca conjunto de queues
 
@@ -116,12 +115,12 @@ void vTask_blink(void *pvParameters);		//efetua um toggle
 
 static void prvOneShotTimerCallback( TimerHandle_t xTimer );
 static void prvAutoReloadTimerCallback( TimerHandle_t xTimer );
-static void prvTimerCallback( TimerHandle_t xTimer );
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+  TimerHandle_t xAutoReloadTimer, xOneShotTimer;
 
 /* USER CODE END 0 */
 
@@ -180,7 +179,7 @@ int main(void)
 										* Se pdFALSE for passado como parametro ele configura como disparo único
 										*/
 		  0, 							/* Não utilizamos ID de timer neste exemplo */
-		  prvTimerCallback      		/* Função de callback deve ser passado nesse parametro para seja processado a ISR */
+		  prvOneShotTimerCallback 		/* Função de callback deve ser passado nesse parametro para seja processado a ISR */
 		  );
 
   /* Cria um software timer com a configuração de reinicialização automática */
@@ -191,7 +190,7 @@ int main(void)
 		   	   	   	   	   	   	   	   	 * Se pdFALSE for passado como parametro ele configura como disparo único
 		   	   	   	   	   	   	   	   	 */
 		  0,							/*Não utilizado ID de timer neste exemplo*/
-		  prvTimerCallback          	/*Função de callback deve ser passado nesse parametro para seja processado a ISR*/
+		  prvAutoReloadTimerCallback	/*Função de callback deve ser passado nesse parametro para seja processado a ISR*/
 		  );
 
   if ((xOneShotTimer != NULL) && (xAutoReloadTimer != NULL)) {
@@ -508,55 +507,6 @@ static void prvAutoReloadTimerCallback( TimerHandle_t xTimer) {
 		xTimerReset( xOneShotTimer, 0);
 	}
 
-}
-
-static void prvTimerCallback( TimerHandle_t xTimer ) {
-
-	TickType_t xTimeNow;
-
-	uint32_t ulExecutionCount;
-
-	char txt[50];
-
-	/*
-	 * A contagem do número de vezes que o SoftTimer expirou é armazenada no ID do cronometro.
-	 * O ID é obtido, incrementado e salvo como novo valor de IF do SoftTimer.
-	 * O ID é um ponteiro vazio, portanto, é feito um cast para uint32_t
-	 */
-	ulExecutionCount = (uint32_t) pvTimerGetTimerID( xTimer );
-
-	ulExecutionCount++;
-
-	vTimerSetTimerID( xTimer, (void *)ulExecutionCount);
-
-	/*Obter o tempo atual de ticks*/
-
-	xTimeNow = xTaskGetTickCount();
-
-	/*
-	 * O ID do timer de disparo unico foi armazenado na variavel xOneShotTimer no momento em que criamos o Timer
-	 * é preciso comparar o ID passado em xTimer quando gouve o estouro do timer, para verificar se foi o timer de disparo
-	 * unico ou auto-reload, será impresso em terminal serial o valor de contagem das ISR de SoftTimer, assim como, qual foi o
-	 * timer que estourou
-	 */
-	if ( xTimer == xOneShotTimer) {
-		sprintf(txt, "One-Shot Timer callback. %ld\r\n", xTimeNow);
-		vPrintString(txt);
-	} else {
-		/*Se não foi o xOneShotTimer que deu a ISR, chegamos a esse ponto indicando que o autoreload foi responsavel pela ISR*/
-		sprintf(txt, "Auto-reload Timer callback. %ld\r\n", xTimeNow);
-		vPrintString(txt);
-
-		if( ulExecutionCount == 50 ) {
-			/*
-			 * Paramos o auto-reload timer apos 50 ISR seguidas
-			 * Todos esses callbacks gerados pelos timers são executados no contexto da tarefa DAEMON do RTOS, responsavel por
-			 * gerenciar os SoftTimers, portanto, nunca poderemos chamar funções bloqueantes dentro de Timers, e é por esse motivo
-			 * que tratamos ele como ISRs, em xTimeStop utilizamos 0 como argumento para existir bloqueio
-			 */
-			xTimerStop( xTimer, 0);
-		}
-	}
 }
 //-----------------------------------------------------------------------------
 

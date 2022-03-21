@@ -5037,3 +5037,135 @@ Finished building: Exemplo_01.bin
  
 Finished building: Exemplo_01.list
  
+17:02:06 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'vUsartLib_Putc':
+../Core/Src/main.c:457:27: warning: pointer targets in passing argument 2 of 'HAL_UART_Transmit' differ in signedness [-Wpointer-sign]
+  457 |  HAL_UART_Transmit(huart, &c_data, 1, 10);
+      |                           ^~~~~~~
+      |                           |
+      |                           char *
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:406,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:21:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:723:73: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+  723 | HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                                ~~~~~~~~~^~~~~
+../Core/Src/main.c: In function 'prvTimerCallback':
+../Core/Src/main.c:547:3: warning: implicit declaration of function 'sprint'; did you mean 'sprintf'? [-Wimplicit-function-declaration]
+  547 |   sprint(txt, "Auto-reload Timer callback. %ld\r\n", xTimeNow);
+      |   ^~~~~~
+      |   sprintf
+../Core/Src/main.c:557:4: warning: implicit declaration of function 'xTimeStop'; did you mean 'xTimerStop'? [-Wimplicit-function-declaration]
+  557 |    xTimeStop( xTimer, 0);
+      |    ^~~~~~~~~
+      |    xTimerStop
+../Core/Src/main.c: In function 'StartDefaultTask':
+../Core/Src/main.c:716:5: warning: implicit declaration of function 'osDelay'; did you mean 'vTaskDelay'? [-Wimplicit-function-declaration]
+  716 |     osDelay(1);
+      |     ^~~~~~~
+      |     vTaskDelay
+At top level:
+../Core/Src/main.c:485:13: warning: 'prvAutoReloadTimerCallback' defined but not used [-Wunused-function]
+  485 | static void prvAutoReloadTimerCallback( TimerHandle_t xTimer) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:470:13: warning: 'prvOneShotTimerCallback' defined but not used [-Wunused-function]
+  470 | static void prvOneShotTimerCallback( TimerHandle_t xTimer) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~
+arm-none-eabi-gcc -o "Exemplo_01.elf" @"objects.list"   -mcpu=cortex-m4 -T"P:\ESTUDOS\freeRTOS\Projects\Exemplo_001\Exemplo_01\STM32F401RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Exemplo_01.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+c:\st\stm32cubeide_1.7.0\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.9-2020-q2-update.win32_2.0.0.202105311346\tools\arm-none-eabi\bin\ld.exe: ./Core/Src/main.o: in function `prvTimerCallback':
+P:/ESTUDOS/freeRTOS/Projects/Exemplo_001/Exemplo_01/Debug/../Core/Src/main.c:547: undefined reference to `sprint'
+c:\st\stm32cubeide_1.7.0\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.9-2020-q2-update.win32_2.0.0.202105311346\tools\arm-none-eabi\bin\ld.exe: P:/ESTUDOS/freeRTOS/Projects/Exemplo_001/Exemplo_01/Debug/../Core/Src/main.c:557: undefined reference to `xTimeStop'
+collect2.exe: error: ld returned 1 exit status
+make: *** [makefile:69: Exemplo_01.elf] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+17:02:27 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'vUsartLib_Putc':
+../Core/Src/main.c:457:27: warning: pointer targets in passing argument 2 of 'HAL_UART_Transmit' differ in signedness [-Wpointer-sign]
+  457 |  HAL_UART_Transmit(huart, &c_data, 1, 10);
+      |                           ^~~~~~~
+      |                           |
+      |                           char *
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:406,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:21:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:723:73: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+  723 | HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                                ~~~~~~~~~^~~~~
+../Core/Src/main.c: In function 'prvTimerCallback':
+../Core/Src/main.c:557:4: warning: implicit declaration of function 'xTimeStop'; did you mean 'xTimerStop'? [-Wimplicit-function-declaration]
+  557 |    xTimeStop( xTimer, 0);
+      |    ^~~~~~~~~
+      |    xTimerStop
+../Core/Src/main.c: In function 'StartDefaultTask':
+../Core/Src/main.c:716:5: warning: implicit declaration of function 'osDelay'; did you mean 'vTaskDelay'? [-Wimplicit-function-declaration]
+  716 |     osDelay(1);
+      |     ^~~~~~~
+      |     vTaskDelay
+At top level:
+../Core/Src/main.c:485:13: warning: 'prvAutoReloadTimerCallback' defined but not used [-Wunused-function]
+  485 | static void prvAutoReloadTimerCallback( TimerHandle_t xTimer) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:470:13: warning: 'prvOneShotTimerCallback' defined but not used [-Wunused-function]
+  470 | static void prvOneShotTimerCallback( TimerHandle_t xTimer) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~
+arm-none-eabi-gcc -o "Exemplo_01.elf" @"objects.list"   -mcpu=cortex-m4 -T"P:\ESTUDOS\freeRTOS\Projects\Exemplo_001\Exemplo_01\STM32F401RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Exemplo_01.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+c:\st\stm32cubeide_1.7.0\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.9-2020-q2-update.win32_2.0.0.202105311346\tools\arm-none-eabi\bin\ld.exe: ./Core/Src/main.o: in function `prvTimerCallback':
+P:/ESTUDOS/freeRTOS/Projects/Exemplo_001/Exemplo_01/Debug/../Core/Src/main.c:557: undefined reference to `xTimeStop'
+collect2.exe: error: ld returned 1 exit status
+make: *** [makefile:69: Exemplo_01.elf] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+17:02:40 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'vUsartLib_Putc':
+../Core/Src/main.c:457:27: warning: pointer targets in passing argument 2 of 'HAL_UART_Transmit' differ in signedness [-Wpointer-sign]
+  457 |  HAL_UART_Transmit(huart, &c_data, 1, 10);
+      |                           ^~~~~~~
+      |                           |
+      |                           char *
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:406,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:21:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:723:73: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+  723 | HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                                ~~~~~~~~~^~~~~
+../Core/Src/main.c: In function 'StartDefaultTask':
+../Core/Src/main.c:716:5: warning: implicit declaration of function 'osDelay'; did you mean 'vTaskDelay'? [-Wimplicit-function-declaration]
+  716 |     osDelay(1);
+      |     ^~~~~~~
+      |     vTaskDelay
+At top level:
+../Core/Src/main.c:485:13: warning: 'prvAutoReloadTimerCallback' defined but not used [-Wunused-function]
+  485 | static void prvAutoReloadTimerCallback( TimerHandle_t xTimer) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:470:13: warning: 'prvOneShotTimerCallback' defined but not used [-Wunused-function]
+  470 | static void prvOneShotTimerCallback( TimerHandle_t xTimer) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~
+arm-none-eabi-gcc -o "Exemplo_01.elf" @"objects.list"   -mcpu=cortex-m4 -T"P:\ESTUDOS\freeRTOS\Projects\Exemplo_001\Exemplo_01\STM32F401RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Exemplo_01.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Exemplo_01.elf
+ 
+arm-none-eabi-size   Exemplo_01.elf 
+arm-none-eabi-objdump -h -S  Exemplo_01.elf  > "Exemplo_01.list"
+arm-none-eabi-objcopy  -O binary  Exemplo_01.elf  "Exemplo_01.bin"
+   text	   data	    bss	    dec	    hex	filename
+  24968	    124	  58532	  83624	  146a8	Exemplo_01.elf
+Finished building: default.size.stdout
+ 
+Finished building: Exemplo_01.bin
+ 
+Finished building: Exemplo_01.list
+ 
+17:13:28 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-size   Exemplo_01.elf 
+   text	   data	    bss	    dec	    hex	filename
+  24968	    124	  58532	  83624	  146a8	Exemplo_01.elf
+Finished building: default.size.stdout
+ 

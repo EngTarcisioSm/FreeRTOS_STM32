@@ -295,10 +295,30 @@ ___
         ~~~
 
 ## (014_2_Software_Timer)
+
 - Reativação  do oneTime a cada 10 estouros do timer AutoReload 
 - OneShot alterado para 100ms
 - Os Handle devem realocados globalmente para ser visualizados em outras funções de callback
 - Sempre verificar o consumo de memoria por "Tmr Svc"
+
+## (015_Software_Timer_ID)
+
+- Manipulando Software timers através do ID
+- a função de callback dos dois timers é a mesma função 
+    - se descobre qual a tratativa a partir do handle de estouro do timer 
+- Explicação do código abaixo 
+    ~~~c
+        ulExecutionCount = (uint32_t) pvTimerGetTimerID( xTimer );
+
+        ulExecutionCount++;
+
+        vTimerSetTimerID( xTimer, (void *)ulExecutionCount);
+    ~~~
+    - É pego o ID do timer o valor é incrementado e depois alterado o valor do ID, no fim 
+    o termo ID funciona para armazenar o incremento ocorrido na variavel "ulExecutionCount" 
+
+    - vTaskList(0) presente na tarefa de debug não é deterministica
+    - Valores expressos no debug na coluna de Stack é dados em words, para converter para bytes na arquitetura de 32bits basta multiplicar por 4
 
 
 
