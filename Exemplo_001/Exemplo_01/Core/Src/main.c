@@ -45,40 +45,6 @@ typedef enum {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define BIT_0 (1 << 0)
-#define BIT_1 (1 << 1)
-#define BIT_2 (1 << 2)
-#define BIT_3 (1 << 3)
-#define BIT_4 (1 << 4)
-#define BIT_5 (1 << 5)
-#define BIT_6 (1 << 6)
-#define BIT_7 (1 << 7)
-#define BIT_8 (1 << 8)
-#define BIT_9 (1 << 9)
-#define BIT_10 (1 << 10)
-#define BIT_11 (1 << 11)
-#define BIT_12 (1 << 12)
-#define BIT_13 (1 << 13)
-#define BIT_14 (1 << 14)
-#define BIT_15 (1 << 15)
-#define BIT_16 (1 << 16)
-#define BIT_17 (1 << 17)
-#define BIT_18 (1 << 18)
-#define BIT_19 (1 << 19)
-#define BIT_20 (1 << 20)
-#define BIT_21 (1 << 21)
-#define BIT_22 (1 << 22)
-#define BIT_23 (1 << 23)
-
-#define TASK_0_BIT (1 << 0)
-#define TASK_1_BIT (1 << 1)
-#define TASK_2_BIT (1 << 2)
-#define TASK_3_BIT (1 << 3)
-
-#define ALL_SYNC_BITS ( TASK_0_BIT | TASK_1_BIT | TASK_2_BIT | TASK_3_BIT )
-
-#define mainONE_SHOT_TIMER_PERIOD 		pdMS_TO_TICKS( 3333 )
-#define mainAUTO_RELOAD_TIMER_PERIOD	pdMS_TO_TICKS( 500 )
 
 /* USER CODE END PD */
 
@@ -93,10 +59,7 @@ UART_HandleTypeDef huart1;
 //osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 //static EventGroupHandle_t xHandle_Event_Group;
-TimerHandle_t xAutoReloadTimer, xOneShotTimer;
-
-const TickType_t xHealthyTimerPeriod = pdMS_TO_TICKS( 3000 );
-const TickType_t xErrorTimerPeriod = pdMS_TO_TICKS( 200 );
+SemaphoreHandle_t xBinarySemaphore = NULL;
 
 //criação de uma variavel que aloca conjunto de queues
 
@@ -116,8 +79,7 @@ void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void vTask_blink(void *pvParameters);		//efetua um toggle
-
-static void prvTimerCallback( TimerHandle_t xTimer );
+void vTask_Handle(void *pvParameters);
 
 /* USER CODE END PFP */
 
@@ -161,50 +123,20 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
-//	xMutex = xSemaphoreCreateMutex();
+
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
+  xBinarySemaphore = xSemaphoreCreateBinary();
+
+  if(xBinarySemaphore != NULL) vPrintString("Semaforo criado com sucesso\n");
   /* USER CODE END RTOS_SEMAPHORES */
 //	xHandle_Event_Group = xEventGroupCreate();
 
   /* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-  BaseType_t xTimer2Started;
 
-  /* Cria um software timer com a configuração de reinicialização automática */
-  xAutoReloadTimer = xTimerCreate(
-		  "AutoReload",					/*Nome do texto para o cronômetro do software - não usado pelo FreeRTOS...*/
-		  mainAUTO_RELOAD_TIMER_PERIOD,	/*Periodo de ISR do timer em ticks*/
-		  pdTRUE,						/* Se pdTRUE for passado como parametro ele configura reinicialização automática
-		   	   	   	   	   	   	   	   	 * Se pdFALSE for passado como parametro ele configura como disparo único
-		   	   	   	   	   	   	   	   	 */
-		  0,							/*Não utilizado ID de timer neste exemplo*/
-		  prvTimerCallback          	/*Função de callback deve ser passado nesse parametro para seja processado a ISR*/
-		  );
-
-  if (xAutoReloadTimer != NULL) {
-	  /*
-	   * Inicie os temporizadores do software, nesse caso usamos um tempo de bloqueio de 0 (sem tempo de bloqueio)
-	   * O escalonador ainda não foi inicado com a função vTaskStartScheduler, logo qualquer horário de bloqueio
-	   * especificado aqui seria ignorado
-	   */
-	  xTimer2Started = xTimerStart( xAutoReloadTimer, 0);
-
-	  /*
-	   * A implementação de xTimerStart() usa a fila de comandos do timer e xTimerStart falhará se a fila de comandos
-	   * do timer estiver cheia. O temporizador tarefa de serviço (daemon rtos) não é criada até que o escalonador seja
-	   * iniciado, portanto, todos os comandos enviados para a fila de comandos permanecerão na fila até depois o planejador
-	   * foi iniciado.
-	   *
-	   * Verificamos no IF abaixo se as duas chamadas para xTimerStart() passaram com sucesso.
-	   */
-
-	  if(xTimer2Started == pdPASS) {
-
-	  }
-  }
 
   /* USER CODE END RTOS_TIMERS */
 
@@ -227,6 +159,13 @@ int main(void)
 	} else {
 		vPrintString("Tarefa Task Blink criada com sucesso!\n");
 	}
+  if ((xTaskCreate(vTask_Handle, "Task handle", configMINIMAL_STACK_SIZE * 2, NULL,
+  			1, NULL)) != pdTRUE) {
+  		vPrintString(
+  				"não foi possivel alocar tarefa vTaskHandle no escalonador\n");
+  	} else {
+  		vPrintString("Tarefa vTaskHandle criada com sucesso!\n");
+  	}
 
 
 	vTaskStartScheduler();
@@ -426,169 +365,53 @@ void vUsartLib_Puts(char *c_data) {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
-}
-
-static void prvOneShotTimerCallback( TimerHandle_t xTimer) {
-	static TickType_t xTimeNow;
-
-	char ucCharBuff[50];
+	BaseType_t xHigherPriorityTaskWoken;
+	/*
+	 * O parâmetro xHigherPriorityTaskWoken deve ser inicializado para pdFALSE, pois será definido como
+	 * pdTRUE dentro da função API segura contra interrupções contra interrupções, se for necessária uma
+	 * alternacia de contexto.
+	 */
+	xHigherPriorityTaskWoken = pdFALSE;
 
 	/*
-	 * xTaskGetTickCont retorna os ticks do RTOS referente ao configTICK_HATE_HZ configurado no FreeRTOSConfig
-	 * como configuramos o tick do rtos para 1KHz, cada tick de rtos é gerado por uma ISR em 1ms
+	 * Forneça o semáforo para desbloquear a tarefa que estará sendo executada com a passagem do parametro
+	 * higher em portYIELD, passando o endereço de xHigherPriorityTaskWoken como parametro pxHigherPriorityTaskWoken da
+	 * função segura contra  interrupção
 	 */
-	xTimeNow = xTaskGetTickCount();
+	xSemaphoreGiveFromISR( xBinarySemaphore, &xHigherPriorityTaskWoken );
 
-	sprintf(ucCharBuff, "One-shot timer callback. xTimeNow = %ld\r\n", xTimeNow);
-	vPrintString(ucCharBuff);
+	/*
+	 * Passe o valor de xHigherPriorityTaskWoken para portYIELD_FROM_ISR().
+	 * Se xHigherPriorityTaskWoken foi definido com pdTRUE na chamada da função xSemaphoreGiveFromISR(),
+	 * então portYIELD_FROM_ISR() solicitará uma troca de contexto forçada para a tarefa que aguarda esse token do semaforo.
+	 * Se xHigherPriorityTaskWoken ainda estiver pdFALSE
+	 * chamar portYIELD_FROM_ISR() não terá efeito, o máximo que pode ocorrer, é devolver o contexto para o escalonador por
+	 * em execução a tarefa de maior prioridade em estado de disponivel (ready).
+	 */
+	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
-static void prvTimerCallback( TimerHandle_t xTimer ) {
-	char txt[50];
+void vTask_Handle (void *pvParameters) {
 
-	static BaseType_t xErrorDetected = pdFALSE;
+	vPrintString("Task gerenciada pelo semaforo iniciada!");
 
-	static uint32_t ulCount = 0;
-
-	if( xErrorDetected == pdFALSE ) {
+	for(;;) {
 		/*
-		 * Uma ou mais tarefas relatam que esta tudo ok. Neste caso utilizamos o xHealthyTimerPeriod
-		 * para mudar o tempo de interrupção para 3 segundos
+		 * Use o semáforo para aguardar o evento. O semáforo foi criado antes do início do escalonador,
+		 * portanto, antes que essa tarefa fosse executada pela primeira vez ela imediatamente é bloqueada
+		 * indefinidamente, significando que essa chamada de função retornará apenas quando o semáforo for obtido
+		 * com exito, portanto não há necessidade de verificar o valor retornado por xSemaphoreTake()
 		 */
-		xTimerChangePeriod(xTimer, xHealthyTimerPeriod, 0);
+		xSemaphoreTake( xBinarySemaphore, portMAX_DELAY );
 
-		ulCount++;
-
-		if(ulCount == 50) {
-			xErrorDetected =pdTRUE;
-		}
-	} else {
 		/*
-		 * Uma ou mais tarefas relatam que esta tudo ok. Neste caso utilizamos o xHealthyTimerPeriod para mudar o
-		 * tempo de interrupção para 3 segundos
+		 * Para chegar nesse ponto de codigo, o evento da ISR deve ter ocorrido. Aqui iriamos processar o restante
+		 * do código da ISR fora dela se fosse necessário, ou poderemos executar algum código qualquer baseado no
+		 * evento gerado pelo semaforo na ISR
 		 */
-		xTimerChangePeriod(xTimer, xErrorTimerPeriod, 0);
+		vPrintString( "Handler task - Processing event. \r\n");
 	}
-	/*
-	 * O valor do LED é modificado a cada ISR gerada de acordo com a temporização
-	 * Identificado que esta tudo bem, atualizando o status do led a cada 3000ms junto da ISR
-	 * Identificado que tem algo de errado com alguma task, atualizando o status de led a cada 200ms junto da ISR
-	 *
-	 */
-	HAL_GPIO_TogglePin(DOUT_LED1_GPIO_Port, DOUT_LED1_Pin);
-
 }
-//-----------------------------------------------------------------------------
-
-//funções de tarefas
-//void vTask_check_event(void *pvParameters) {
-//
-//	vPrintString("vTask_check_event iniciada! \r\n");
-//	for(;;){
-//		vPrintString("Setando evento do BIT_0!\r\n");
-//		xEventGroupSetBits(xHandle_Event_Group, BIT_0);
-//		vTaskDelay( 1000 / portTICK_PERIOD_MS);
-//
-//		vPrintString("Setando evento do BIT_1!\r\n");
-//		xEventGroupSetBits(xHandle_Event_Group, BIT_0);
-//		vTaskDelay( 1000 / portTICK_PERIOD_MS);
-//
-//		vPrintString("Setando evento do BIT_2!\r\n");
-//		xEventGroupSetBits(xHandle_Event_Group, BIT_0);
-//		vTaskDelay( 1000 / portTICK_PERIOD_MS);
-//
-//		vTaskDelay( 3000 / portTICK_PERIOD_MS);
-//
-//	}
-//	vTaskDelete(NULL);
-//}
-//
-//void vTask1(void *pvParameters) {
-//
-//	vPrintString("vTask_1 iniciada! \r\n");
-//	for(;;){
-//		/* A função xEventGroupWaitBits faz com que a tarefa entre em estado
-//		 * de bloqueado por tempo definido ou indeterminado ate que um evento
-//		 * de sinalização de um BIT do grupo de evento seja gerado de forma
-//		 * externa por uma task ou ISR
-//		 */
-//		xEventGroupWaitBits(
-//				xHandle_Event_Group, /*O event group informado*/
-//				BIT_0, /*Indica quais esta aguardando serem jogados para nivel alto*/
-//				pdTRUE, /*BIT_0 será jogado para nivel baixo após sair da função xEventGroupWaitBits*/
-//				pdFALSE, /*Não esperar que todos os bits sejam em nivel alto
-//				 	 	  * como é um bit apenas é irrelevante
-//				 	 	  */
-//				portMAX_DELAY);
-//
-//		/*
-//		 * Nota-se que diferente do exemplo anteriormente usado, não precisamos
-//		 * checar quais bits foram jogados para nível alto pois trabalhamos
-//		 * com apenas um bit neste momento
-//		 */
-//		vPrintString("BIT_0 Setado! \r\n\n");
-//	}
-//	vTaskDelete(NULL);
-//}
-//
-//void vTask2(void *pvParameters) {
-//
-//	vPrintString("vTask_2 inicada!\r\n");
-//
-//	for(;;){
-//		/* A função xEventGroupWaitBits faz com que a tarefa entre em estado
-//		 * de bloqueado por tempo definido ou indeterminado ate que um evento
-//		 * de sinalização de um BIT do grupo de evento seja gerado de forma
-//		 * externa por uma task ou ISR
-//		 */
-//		xEventGroupWaitBits(
-//				xHandle_Event_Group, /*O event group informado*/
-//				BIT_1, /*Indica quais esta aguardando serem jogados para nivel alto*/
-//				pdTRUE, /*BIT_0 será jogado para nivel baixo após sair da função xEventGroupWaitBits*/
-//				pdFALSE, /*Não esperar que todos os bits sejam em nivel alto
-//				 	 	  * como é um bit apenas é irrelevante
-//				 	 	  */
-//				portMAX_DELAY);
-//
-//		/*
-//		 * Nota-se que diferente do exemplo anteriormente usado, não precisamos
-//		 * checar quais bits foram jogados para nível alto pois trabalhamos
-//		 * com apenas um bit neste momento
-//		 */
-//		vPrintString("BIT_1 Setado! \r\n\n");
-//	}
-//	vTaskDelete(NULL);
-//}
-//
-//void vTask3(void *pvParameters) {
-//
-//	vPrintString("vTask_3 inicada!\r\n");
-//
-//	for(;;){
-//		/* A função xEventGroupWaitBits faz com que a tarefa entre em estado
-//		 * de bloqueado por tempo definido ou indeterminado ate que um evento
-//		 * de sinalização de um BIT do grupo de evento seja gerado de forma
-//		 * externa por uma task ou ISR
-//		 */
-//		xEventGroupWaitBits(
-//				xHandle_Event_Group, /*O event group informado*/
-//				BIT_2, /*Indica quais esta aguardando serem jogados para nivel alto*/
-//				pdTRUE, /*BIT_0 será jogado para nivel baixo após sair da função xEventGroupWaitBits*/
-//				pdFALSE, /*Não esperar que todos os bits sejam em nivel alto
-//				 	 	  * como é um bit apenas é irrelevante
-//				 	 	  */
-//				portMAX_DELAY);
-//
-//		/*
-//		 * Nota-se que diferente do exemplo anteriormente usado, não precisamos
-//		 * checar quais bits foram jogados para nível alto pois trabalhamos
-//		 * com apenas um bit neste momento
-//		 */
-//		vPrintString("BIT_2 Setado! \r\n\n");
-//	}
-//	vTaskDelete(NULL);
-//}
-
 
 void vTask_blink(void *pvParameters) {
 
@@ -615,6 +438,8 @@ void vTask_blink(void *pvParameters) {
 
 		vPrintString("\n\n\n");
 		vTaskDelay(5000 / portTICK_PERIOD_MS);
+
+		HAL_GPIO_TogglePin(DOUT_LED1_GPIO_Port, DOUT_LED1_Pin);
 	}
 	vTaskDelete( NULL);
 }

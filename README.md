@@ -324,11 +324,41 @@ ___
 ## (016_Software_Timer_AltTimer)
 - Modificação do tempo de estouro do software timer baseado em condicionais inseridas 
 
+## (017_SemaforosISR)
+- Necessário utilizar a biblioteca de semáforos 
+    ~~~c
+        #include "semphr.h" 
+    ~~~
+- Gerar um Handle para o semáforo
+    ~~~c
+        SemaphoreHandle_t xBinarySemaphore = NULL;
+    ~~~
+- Criar o semáforo a partir da função de criação do semáforo 
+    ~~~c
+        xBinarySemaphore = xSemaphoreCreateBinary();
+    ~~~
+    - É testado se o semáforo foi criado com sucesso 
+    ~~~c
+        if(xBinarySemaphore != NULL) vPrintString("Semaforo criado com sucesso\n");
+    ~~~
+- Nos arquivos do FreeRTOS o Semáforo nada mais é do que uma fila, uma QUEUE, entretanto os semáforos são mais rápidos que as filas por não tratar nenhum tipo de dado 
+- É possivel trabalhar com xSemaphoreTake() por timeout, o mesmo tem como retorno uma variavel do tipo BaseType_t que indica com base no segundo parametro se dentro daquele intervalo a condição foi atendida, retornando pdTRUE, caso o estouro tenha ocorrido sem ser possivel efetuar o take é retornado pdFALSE
+    ~~~c
+        BaseType_t Timeout_Semaphore = pdFALSE;
+        Timeout_Semaphore = xSemaphoreTake( xSemaphoreBinary, tempo / portTICK_PERIOD_MS );
+        if (Timeout_Semaphore == pdTRUE) {
+            //take foi possivel
+        } else {
+            //ocorreu o timeout
+        }
+    ~~~
+
+
 
 
 https://www.youtube.com/watch?v=3sK4sCgIauI
 
-25:28 / 1:23:28
+47:39 / 1:23:28
 
 
 
