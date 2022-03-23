@@ -3828,3 +3828,14 @@
 2022-03-22 13:35:08,160 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] mar 22, 2022 1:35:08 PM org.glassfish.grizzly.http.server.HttpServer start
 2022-03-22 13:35:08,160 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] INFORMA??ES: [HttpServer] Started.
 2022-03-22 13:35:08,161 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 
+2022-03-22 16:15:13,572 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 
+2022-03-23 10:37:04,358 [INFO] Activator:177 - 
+
+
+2022-03-23 10:37:04,360 [INFO] Activator:178 - !SESSION log4j initialized
+2022-03-23 10:37:16,325 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] mar 23, 2022 10:37:16 AM org.glassfish.grizzly.http.server.NetworkListener start
+2022-03-23 10:37:16,327 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] INFORMA??ES: Started listener bound to [localhost:1594]
+2022-03-23 10:37:16,328 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 
+2022-03-23 10:37:16,329 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] mar 23, 2022 10:37:16 AM org.glassfish.grizzly.http.server.HttpServer start
+2022-03-23 10:37:16,330 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] INFORMA??ES: [HttpServer] Started.
+2022-03-23 10:37:16,331 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 

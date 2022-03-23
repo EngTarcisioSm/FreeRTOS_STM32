@@ -321,7 +321,14 @@ ___
     - Valores expressos no debug na coluna de Stack é dados em words, para converter para bytes na arquitetura de 32bits basta multiplicar por 4
 
 
+## (016_Software_Timer_AltTimer)
+- Modificação do tempo de estouro do software timer baseado em condicionais inseridas 
 
+
+
+https://www.youtube.com/watch?v=3sK4sCgIauI
+
+25:28 / 1:23:28
 
 
 

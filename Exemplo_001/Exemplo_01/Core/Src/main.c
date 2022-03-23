@@ -95,6 +95,9 @@ UART_HandleTypeDef huart1;
 //static EventGroupHandle_t xHandle_Event_Group;
 TimerHandle_t xAutoReloadTimer, xOneShotTimer;
 
+const TickType_t xHealthyTimerPeriod = pdMS_TO_TICKS( 3000 );
+const TickType_t xErrorTimerPeriod = pdMS_TO_TICKS( 200 );
+
 //criação de uma variavel que aloca conjunto de queues
 
 //SemaphoreHandle_t xMutex;
@@ -114,8 +117,6 @@ void StartDefaultTask(void const * argument);
 /* USER CODE BEGIN PFP */
 void vTask_blink(void *pvParameters);		//efetua um toggle
 
-static void prvOneShotTimerCallback( TimerHandle_t xTimer );
-static void prvAutoReloadTimerCallback( TimerHandle_t xTimer );
 static void prvTimerCallback( TimerHandle_t xTimer );
 
 /* USER CODE END PFP */
@@ -170,18 +171,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-  BaseType_t xTimer1Started, xTimer2Started;
-
-  /*Cria timer com a configuração de disparo único*/
-  xOneShotTimer = xTimerCreate(
-		  "OneShot", 					/* Nome do texto para o cronômetro do software - não usado pelo FreeRTOS */
-		  mainONE_SHOT_TIMER_PERIOD, 	/* Periodo de ISR do timer em ticks */
-		  pdFALSE, 					   /* Se pdTRUE for passado como parametro ele configura reinicialização automática
-										* Se pdFALSE for passado como parametro ele configura como disparo único
-										*/
-		  0, 							/* Não utilizamos ID de timer neste exemplo */
-		  prvTimerCallback      		/* Função de callback deve ser passado nesse parametro para seja processado a ISR */
-		  );
+  BaseType_t xTimer2Started;
 
   /* Cria um software timer com a configuração de reinicialização automática */
   xAutoReloadTimer = xTimerCreate(
@@ -194,13 +184,12 @@ int main(void)
 		  prvTimerCallback          	/*Função de callback deve ser passado nesse parametro para seja processado a ISR*/
 		  );
 
-  if ((xOneShotTimer != NULL) && (xAutoReloadTimer != NULL)) {
+  if (xAutoReloadTimer != NULL) {
 	  /*
 	   * Inicie os temporizadores do software, nesse caso usamos um tempo de bloqueio de 0 (sem tempo de bloqueio)
 	   * O escalonador ainda não foi inicado com a função vTaskStartScheduler, logo qualquer horário de bloqueio
 	   * especificado aqui seria ignorado
 	   */
-	  xTimer1Started = xTimerStart( xOneShotTimer, 0);
 	  xTimer2Started = xTimerStart( xAutoReloadTimer, 0);
 
 	  /*
@@ -212,7 +201,7 @@ int main(void)
 	   * Verificamos no IF abaixo se as duas chamadas para xTimerStart() passaram com sucesso.
 	   */
 
-	  if((xTimer1Started == pdPASS) && (xTimer2Started == pdPASS)) {
+	  if(xTimer2Started == pdPASS) {
 
 	  }
   }
@@ -231,34 +220,6 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-	//criação da tarefa 1
-//	if ((xTaskCreate(vTask1, "task_1", configMINIMAL_STACK_SIZE, NULL, 1, NULL))
-//			!= pdTRUE) {
-//		vPrintString("Não foi possivel alocar tarefa Task_1 no escalonador\n");
-//	} else {
-//		vPrintString("Tarefa Task_1 criada com sucesso!\n");
-//	}
-//
-//	if ((xTaskCreate(vTask2, "task_2", configMINIMAL_STACK_SIZE, NULL, 1, NULL))
-//			!= pdTRUE) {
-//		vPrintString("Não foi possivel alocar tarefa Task_2 no escalonador\n");
-//	} else {
-//		vPrintString("Tarefa Task_2 criada com sucesso!\n");
-//	}
-//
-//	if ((xTaskCreate(vTask3, "task_3", configMINIMAL_STACK_SIZE, NULL, 1, NULL))
-//			!= pdTRUE) {
-//		vPrintString("Não foi possivel alocar tarefa Task_3 no escalonador\n");
-//	} else {
-//		vPrintString("Tarefa Task_3 criada com sucesso!\n");
-//	}
-//
-//	if ((xTaskCreate(vTask_check_event, "check_event", configMINIMAL_STACK_SIZE, NULL, 1, NULL)) != pdTRUE) {
-//		vPrintString("Não foi possivel alocar tarefa vTask_Print_count no escalonador.");
-//	} else {
-//		vPrintString("Tarefa check_event criada com sucesso!\n");
-//	}
-
 	if ((xTaskCreate(vTask_blink, "Task Blink", configMINIMAL_STACK_SIZE * 2, NULL,
 			1, NULL)) != pdTRUE) {
 		vPrintString(
@@ -482,81 +443,40 @@ static void prvOneShotTimerCallback( TimerHandle_t xTimer) {
 	vPrintString(ucCharBuff);
 }
 
-static void prvAutoReloadTimerCallback( TimerHandle_t xTimer) {
-	static TickType_t xTimeNow;
-
-	static uint8_t uc_count = 0;
-
-	char ucCharBuff[50];
-
-
-
-	/*
-	 * xTaskGetTickCont retorna os ticks do RTOS referente ao configTICK_HATE_HZ configurado no FreeRTOSConfig
-	 * como configuramos o tick do rtos para 1KHz, cada tick de rtos é gerado por uma ISR em 1ms
-	 */
-	xTimeNow = xTaskGetTickCount();
-
-	sprintf(ucCharBuff, "Auto-reload timer callback. xTimeNow = %ld\r\n", xTimeNow);
-	vPrintString(ucCharBuff);
-
-	uc_count++;
-
-	if(uc_count == 20) {
-		uc_count = 0;
-		vPrintString("Oneshot Time Reativado!\n");
-		xTimerReset( xOneShotTimer, 0);
-	}
-
-}
-
 static void prvTimerCallback( TimerHandle_t xTimer ) {
-
-	TickType_t xTimeNow;
-
-	uint32_t ulExecutionCount;
-
 	char txt[50];
 
-	/*
-	 * A contagem do número de vezes que o SoftTimer expirou é armazenada no ID do cronometro.
-	 * O ID é obtido, incrementado e salvo como novo valor de IF do SoftTimer.
-	 * O ID é um ponteiro vazio, portanto, é feito um cast para uint32_t
-	 */
-	ulExecutionCount = (uint32_t) pvTimerGetTimerID( xTimer );
+	static BaseType_t xErrorDetected = pdFALSE;
 
-	ulExecutionCount++;
+	static uint32_t ulCount = 0;
 
-	vTimerSetTimerID( xTimer, (void *)ulExecutionCount);
+	if( xErrorDetected == pdFALSE ) {
+		/*
+		 * Uma ou mais tarefas relatam que esta tudo ok. Neste caso utilizamos o xHealthyTimerPeriod
+		 * para mudar o tempo de interrupção para 3 segundos
+		 */
+		xTimerChangePeriod(xTimer, xHealthyTimerPeriod, 0);
 
-	/*Obter o tempo atual de ticks*/
+		ulCount++;
 
-	xTimeNow = xTaskGetTickCount();
-
-	/*
-	 * O ID do timer de disparo unico foi armazenado na variavel xOneShotTimer no momento em que criamos o Timer
-	 * é preciso comparar o ID passado em xTimer quando gouve o estouro do timer, para verificar se foi o timer de disparo
-	 * unico ou auto-reload, será impresso em terminal serial o valor de contagem das ISR de SoftTimer, assim como, qual foi o
-	 * timer que estourou
-	 */
-	if ( xTimer == xOneShotTimer) {
-		sprintf(txt, "One-Shot Timer callback. %ld\r\n", xTimeNow);
-		vPrintString(txt);
-	} else {
-		/*Se não foi o xOneShotTimer que deu a ISR, chegamos a esse ponto indicando que o autoreload foi responsavel pela ISR*/
-		sprintf(txt, "Auto-reload Timer callback. %ld\r\n", xTimeNow);
-		vPrintString(txt);
-
-		if( ulExecutionCount == 50 ) {
-			/*
-			 * Paramos o auto-reload timer apos 50 ISR seguidas
-			 * Todos esses callbacks gerados pelos timers são executados no contexto da tarefa DAEMON do RTOS, responsavel por
-			 * gerenciar os SoftTimers, portanto, nunca poderemos chamar funções bloqueantes dentro de Timers, e é por esse motivo
-			 * que tratamos ele como ISRs, em xTimeStop utilizamos 0 como argumento para existir bloqueio
-			 */
-			xTimerStop( xTimer, 0);
+		if(ulCount == 50) {
+			xErrorDetected =pdTRUE;
 		}
+	} else {
+		/*
+		 * Uma ou mais tarefas relatam que esta tudo ok. Neste caso utilizamos o xHealthyTimerPeriod para mudar o
+		 * tempo de interrupção para 3 segundos
+		 */
+		xTimerChangePeriod(xTimer, xErrorTimerPeriod, 0);
 	}
+	/*
+	 * O valor do LED é modificado a cada ISR gerada de acordo com a temporização
+	 * Identificado que esta tudo bem, atualizando o status do led a cada 3000ms junto da ISR
+	 * Identificado que tem algo de errado com alguma task, atualizando o status de led a cada 200ms junto da ISR
+	 *
+	 */
+	HAL_GPIO_TogglePin(DOUT_LED1_GPIO_Port, DOUT_LED1_Pin);
+
 }
 //-----------------------------------------------------------------------------
 
@@ -678,7 +598,7 @@ void vTask_blink(void *pvParameters) {
 
 	for (;;) {
 		//Altera o estado do led
-		HAL_GPIO_TogglePin(DOUT_LED1_GPIO_Port, DOUT_LED1_Pin);
+		//HAL_GPIO_TogglePin(DOUT_LED1_GPIO_Port, DOUT_LED1_Pin);
 
 		vTaskList(c_buff);
 
