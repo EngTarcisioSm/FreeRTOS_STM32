@@ -403,7 +403,7 @@ void vTask_Handle (void *pvParameters) {
 		 * indefinidamente, significando que essa chamada de função retornará apenas quando o semáforo for obtido
 		 * com exito, portanto não há necessidade de verificar o valor retornado por xSemaphoreTake()
 		 */
-		xSemaphoreTake( xCountingSemaphore, portMAX_DELAY );
+		xSemaphoreTake( xBinarySemaphore, portMAX_DELAY );
 
 		/*
 		 * Para chegar nesse ponto de codigo, o evento da ISR deve ter ocorrido. Aqui iriamos processar o restante

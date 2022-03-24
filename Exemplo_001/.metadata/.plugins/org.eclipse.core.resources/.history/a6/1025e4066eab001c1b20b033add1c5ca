@@ -59,7 +59,7 @@ UART_HandleTypeDef huart1;
 //osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 //static EventGroupHandle_t xHandle_Event_Group;
-SemaphoreHandle_t xCountingSemaphore = NULL;
+SemaphoreHandle_t xBinarySemaphore = NULL;
 
 //criação de uma variavel que aloca conjunto de queues
 
@@ -128,11 +128,11 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-  //O semáforo é criado para ter um valor maximo de 10 contagens e um valor inicial de contagem 0
-  xCountingSemaphore = xSemaphoreCreateCounting(10,0);
+  xBinarySemaphore = xSemaphoreCreateBinary();
 
-  if(xCountingSemaphore != NULL) vPrintString("Semaforo criado com sucesso\n");
+  if(xBinarySemaphore != NULL) vPrintString("Semaforo criado com sucesso\n");
   /* USER CODE END RTOS_SEMAPHORES */
+//	xHandle_Event_Group = xEventGroupCreate();
 
   /* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
@@ -147,6 +147,8 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
+//  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+//  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -372,14 +374,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	xHigherPriorityTaskWoken = pdFALSE;
 
 	/*
-	 * Neste caso, como estamos utilizando semaforos contadores, concedemos 3 tokens para o semaforo
-	 * para que a tarefa que recebe este token com xSemaphoreTake() para processar todas as interrupções
-	 * geradas aqui de forma simulada. Este exemplo é melhorado pois não perdemos nenhuma execução de
-	 * interrupção mesmo que nossa tarefa esteja executando uma chamada de semáforo.
+	 * Forneça o semáforo para desbloquear a tarefa que estará sendo executada com a passagem do parametro
+	 * higher em portYIELD, passando o endereço de xHigherPriorityTaskWoken como parametro pxHigherPriorityTaskWoken da
+	 * função segura contra  interrupção
 	 */
-	xSemaphoreGiveFromISR( xCountingSemaphore, &xHigherPriorityTaskWoken );
-	xSemaphoreGiveFromISR( xCountingSemaphore, &xHigherPriorityTaskWoken );
-	xSemaphoreGiveFromISR( xCountingSemaphore, &xHigherPriorityTaskWoken );
+	xSemaphoreGiveFromISR( xBinarySemaphore, &xHigherPriorityTaskWoken );
 
 	/*
 	 * Passe o valor de xHigherPriorityTaskWoken para portYIELD_FROM_ISR().
@@ -403,7 +402,7 @@ void vTask_Handle (void *pvParameters) {
 		 * indefinidamente, significando que essa chamada de função retornará apenas quando o semáforo for obtido
 		 * com exito, portanto não há necessidade de verificar o valor retornado por xSemaphoreTake()
 		 */
-		xSemaphoreTake( xCountingSemaphore, portMAX_DELAY );
+		xSemaphoreTake( xBinarySemaphore, portMAX_DELAY );
 
 		/*
 		 * Para chegar nesse ponto de codigo, o evento da ISR deve ter ocorrido. Aqui iriamos processar o restante

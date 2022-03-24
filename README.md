@@ -353,12 +353,24 @@ ___
         }
     ~~~
 
+## (018_SemaforosContador)
+- Descrições dentro do código 
+- Habilitação no arquivo FreeRTOSConfig da funcionalidade de Semaforos contadores 
+    ~~~c
+        #define configUSE_COUNTING_SEMAPHORES			1
+    ~~~
+- É necessário ainda utilizar a lib de semáforos 
+    ~~~c
+        #include "semphr.h"  
+    ~~~
+- O Handle de semáforos binarios e contadores são de mesmo tipo "SemaphoreHandle_t"
+- A função de criação do semáforo é diferente pois a a necessidade de especificar a quantidade de espaços disponiveis para tokens e a partir de qual bloco deve-se iniciar a inclusão de tokens, caso seja inserido valor diferente de 0 no segundo parametro os demais ficaram inutilizados 
+    ~~~c
+        //exemplo
+        xCountingSemaphore = xSemaphoreCreateCounting(10,0);
+    ~~~
 
-
-
-https://www.youtube.com/watch?v=3sK4sCgIauI
-
-47:39 / 1:23:28
+## (019_Semaforos_Binarios_E_Contador)
 
 
 

@@ -3,6 +3,7 @@ queue.c:368:16:xQueueGenericCreate	48	static,ignoring_inline_asm
 queue.c:422:13:prvInitialiseNewQueue	24	static
 queue.c:466:14:prvInitialiseMutex	16	static
 queue.c:496:16:xQueueCreateMutex	32	static
+queue.c:714:16:xQueueCreateCountingSemaphore	32	static,ignoring_inline_asm
 queue.c:740:12:xQueueGenericSend	64	static,ignoring_inline_asm
 queue.c:950:12:xQueueGenericSendFromISR	72	static,ignoring_inline_asm
 queue.c:1112:12:xQueueGiveFromISR	64	static,ignoring_inline_asm
