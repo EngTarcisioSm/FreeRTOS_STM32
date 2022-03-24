@@ -62,6 +62,7 @@ UART_HandleTypeDef huart1;
 SemaphoreHandle_t xCountingSemaphore = NULL;
 SemaphoreHandle_t xCountSemaphore = NULL;
 SemaphoreHandle_t xBinSemaphore = NULL;
+SemaphoreHandle_t xMutex = NULL;
 
 //criação de uma variavel que aloca conjunto de queues
 
@@ -136,6 +137,7 @@ int main(void) {
 	xCountingSemaphore = xSemaphoreCreateCounting(10, 0);
 	xCountSemaphore = xSemaphoreCreateCounting(5, 0);
 	xBinSemaphore = xSemaphoreCreateBinary();
+	xMutex = xSemaphoreCreateMutex();
 
 	if (xCountingSemaphore != NULL)
 		vPrintString("xCountingSemaphore criado com sucesso\n");
@@ -143,6 +145,8 @@ int main(void) {
 		vPrintString("xCountSemaphore criado com sucesso\n");
 	if (xBinSemaphore != NULL)
 		vPrintString("xBinSemaphore criado com sucesso\n");
+	if (xMutex != NULL)
+			vPrintString("xMutex criado com sucesso\n");
 	/* USER CODE END RTOS_SEMAPHORES */
 
 	/* USER CODE BEGIN RTOS_TIMERS */
@@ -361,14 +365,14 @@ void vPrintString(char *pc_uartSend_f) {
 	HAL_GPIO_WritePin(SEL_0_GPIO_Port, SEL_0_Pin, Bit_RESET);
 	HAL_GPIO_WritePin(SEL_1_GPIO_Port, SEL_1_Pin, Bit_RESET);
 	HAL_GPIO_WritePin(EN_RX_485_GPIO_Port, EN_RX_485_Pin, Bit_RESET);
-	taskENTER_CRITICAL();	//removido
-	//xSemaphoreTake(xMutex, portMAX_DELAY);
+//	taskENTER_CRITICAL();	//removido
+	xSemaphoreTake(xMutex, portMAX_DELAY);
 	{
 		vUsartLib_Puts(pc_uartSend_f);
 	}
-	taskEXIT_CRITICAL();		//removido
+//	taskEXIT_CRITICAL();		//removido
 	//acionamentos necessários para chavear e acionar o rs485 em modo de recepção
-	//xSemaphoreGive(xMutex);
+	xSemaphoreGive(xMutex);
 	HAL_GPIO_WritePin(SEL_0_GPIO_Port, SEL_0_Pin, Bit_SET);
 	HAL_GPIO_WritePin(SEL_1_GPIO_Port, SEL_1_Pin, Bit_SET);
 	HAL_GPIO_WritePin(EN_RX_485_GPIO_Port, EN_RX_485_Pin, Bit_SET);

@@ -6,6 +6,8 @@
 		<item key="isRegEx" value="false"/>
 		<item key="selection" value=""/>
 		<list key="findhistory">
+			<item value="configUSE_MUTEXES"/>
+			<item value="SystemCoreClock"/>
 			<item value="prvTimerCallback"/>
 			<item value="configUSE_TIMERS"/>
 			<item value="QUEUE_SETS"/>

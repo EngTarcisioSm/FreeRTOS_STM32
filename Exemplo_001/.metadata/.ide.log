@@ -3850,3 +3850,4 @@
 2022-03-24 08:12:03,685 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] mar 24, 2022 8:12:03 AM org.glassfish.grizzly.http.server.HttpServer start
 2022-03-24 08:12:03,685 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] INFORMA??ES: [HttpServer] Started.
 2022-03-24 08:12:03,685 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 
+2022-03-24 14:50:39,777 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] 

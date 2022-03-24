@@ -375,6 +375,20 @@ ___
     - 2 Contadores 
     - 1 Binário
 
+## (020_Semaforos_Binarios_E_Contador)
+- Para a utilização de Mutex é necessário efetuar sua habilitação no arquivo de configuração do FreeRTOS
+    ~~~c
+        #define configUSE_MUTEXES						1
+    ~~~
+- Para criação de uma mutex é necessario criar seu handle que é o mesmo de um semáforo comum e em seguida utilizar a função xSemaphoreCreateMutex();
+
+    ~~~c
+        SemaphoreHandle_t xMutex = NULL;
+        xMutex = xSemaphoreCreateMutex();
+    ~~~
+- A mutex neste exemplo é utilizada para gerenciar o acesso ao barramento UART na função vPrintString(char *pc_uartSend_f)
+- Para utilização é necessário incluir as bibliotecas de semaforos e filas 
 
 
-
+https://www.youtube.com/watch?v=QM-6-hMB4To
+46:26 / 1:55:09
