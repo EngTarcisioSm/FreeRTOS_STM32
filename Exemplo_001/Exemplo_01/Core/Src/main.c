@@ -60,6 +60,8 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 //static EventGroupHandle_t xHandle_Event_Group;
 SemaphoreHandle_t xCountingSemaphore = NULL;
+SemaphoreHandle_t xCountSemaphore = NULL;
+SemaphoreHandle_t xBinSemaphore = NULL;
 
 //criação de uma variavel que aloca conjunto de queues
 
@@ -75,11 +77,14 @@ void vUsartLib_Puts(char *c_data);
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
-void StartDefaultTask(void const * argument);
+void StartDefaultTask(void const *argument);
 
 /* USER CODE BEGIN PFP */
 void vTask_blink(void *pvParameters);		//efetua um toggle
 void vTask_Handle(void *pvParameters);
+void vTask_1(void *pvParameters);
+void vTask_2(void *pvParameters);
+void vTask_3(void *pvParameters);
 
 /* USER CODE END PFP */
 
@@ -89,244 +94,262 @@ void vTask_Handle(void *pvParameters);
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void)
-{
-  /* USER CODE BEGIN 1 */
+ * @brief  The application entry point.
+ * @retval int
+ */
+int main(void) {
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+	/* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+	/* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_USART1_UART_Init();
-  /* USER CODE BEGIN 2 */
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_USART1_UART_Init();
+	/* USER CODE BEGIN 2 */
 
-  /* USER CODE END 2 */
+	/* USER CODE END 2 */
 
-  /* USER CODE BEGIN RTOS_MUTEX */
+	/* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
 
-  /* USER CODE END RTOS_MUTEX */
+	/* USER CODE END RTOS_MUTEX */
 
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
+	/* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-  //O semáforo é criado para ter um valor maximo de 10 contagens e um valor inicial de contagem 0
-  xCountingSemaphore = xSemaphoreCreateCounting(10,0);
+	//O semáforo é criado para ter um valor maximo de 10 contagens e um valor inicial de contagem 0
+	xCountingSemaphore = xSemaphoreCreateCounting(10, 0);
+	xCountSemaphore = xSemaphoreCreateCounting(5, 0);
+	xBinSemaphore = xSemaphoreCreateBinary();
 
-  if(xCountingSemaphore != NULL) vPrintString("Semaforo criado com sucesso\n");
-  /* USER CODE END RTOS_SEMAPHORES */
+	if (xCountingSemaphore != NULL)
+		vPrintString("xCountingSemaphore criado com sucesso\n");
+	if (xCountSemaphore != NULL)
+		vPrintString("xCountSemaphore criado com sucesso\n");
+	if (xBinSemaphore != NULL)
+		vPrintString("xBinSemaphore criado com sucesso\n");
+	/* USER CODE END RTOS_SEMAPHORES */
 
-  /* USER CODE BEGIN RTOS_TIMERS */
+	/* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
 
+	/* USER CODE END RTOS_TIMERS */
 
-  /* USER CODE END RTOS_TIMERS */
-
-  /* USER CODE BEGIN RTOS_QUEUES */
+	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
 
-  /* USER CODE END RTOS_QUEUES */
+	/* USER CODE END RTOS_QUEUES */
 
-  /* Create the thread(s) */
-  /* definition and creation of defaultTask */
+	/* Create the thread(s) */
+	/* definition and creation of defaultTask */
 
-  /* USER CODE BEGIN RTOS_THREADS */
+	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-	if ((xTaskCreate(vTask_blink, "Task Blink", configMINIMAL_STACK_SIZE * 2, NULL,
-			1, NULL)) != pdTRUE) {
+	if ((xTaskCreate(vTask_blink, "Task Blink", configMINIMAL_STACK_SIZE * 2,
+	NULL, 1, NULL)) != pdTRUE) {
 		vPrintString(
 				"não foi possivel alocar tarefa Blink vTaskBlink no escalonador\n");
 	} else {
 		vPrintString("Tarefa Task Blink criada com sucesso!\n");
 	}
-  if ((xTaskCreate(vTask_Handle, "Task handle", configMINIMAL_STACK_SIZE * 2, NULL,
-  			1, NULL)) != pdTRUE) {
-  		vPrintString(
-  				"não foi possivel alocar tarefa vTaskHandle no escalonador\n");
-  	} else {
-  		vPrintString("Tarefa vTaskHandle criada com sucesso!\n");
-  	}
+	if ((xTaskCreate(vTask_Handle, "Task handle", configMINIMAL_STACK_SIZE * 2,
+	NULL, 1, NULL)) != pdTRUE) {
+		vPrintString(
+				"não foi possivel alocar tarefa vTaskHandle no escalonador\n");
+	} else {
+		vPrintString("Tarefa vTaskHandle criada com sucesso!\n");
+	}
 
+	if ((xTaskCreate(vTask_1, "vTask_1", configMINIMAL_STACK_SIZE,
+	NULL, 1, NULL)) != pdTRUE) {
+		vPrintString("não foi possivel alocar tarefa vTask_1 no escalonador\n");
+	} else {
+		vPrintString("Tarefa vTask_1 criada com sucesso!\n");
+	}
+
+	if ((xTaskCreate(vTask_2, "vTask_2", configMINIMAL_STACK_SIZE,
+	NULL, 1, NULL)) != pdTRUE) {
+		vPrintString("não foi possivel alocar tarefa vTask_2 no escalonador\n");
+	} else {
+		vPrintString("Tarefa vTask_2 criada com sucesso!\n");
+	}
+
+	if ((xTaskCreate(vTask_3, "vTask_3", configMINIMAL_STACK_SIZE,
+	NULL, 1, NULL)) != pdTRUE) {
+		vPrintString("não foi possivel alocar tarefa vTask_3 no escalonador\n");
+	} else {
+		vPrintString("Tarefa vTask_3 criada com sucesso!\n");
+	}
 
 	vTaskStartScheduler();
-  /* USER CODE END RTOS_THREADS */
+	/* USER CODE END RTOS_THREADS */
 
-  /* Start scheduler */
+	/* Start scheduler */
 //  osKernelStart();
-
-  /* We should never get here as control is now taken by the scheduler */
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+	/* We should never get here as control is now taken by the scheduler */
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
 	while (1) {
-    /* USER CODE END WHILE */
+		/* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+		/* USER CODE BEGIN 3 */
 	}
-  /* USER CODE END 3 */
+	/* USER CODE END 3 */
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
-void SystemClock_Config(void)
-{
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ * @brief System Clock Configuration
+ * @retval None
+ */
+void SystemClock_Config(void) {
+	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
 
-  /** Configure the main internal regulator output voltage
-  */
-  __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 84;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+	/** Configure the main internal regulator output voltage
+	 */
+	__HAL_RCC_PWR_CLK_ENABLE();
+	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
+	/** Initializes the RCC Oscillators according to the specified parameters
+	 * in the RCC_OscInitTypeDef structure.
+	 */
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+	RCC_OscInitStruct.PLL.PLLM = 4;
+	RCC_OscInitStruct.PLL.PLLN = 84;
+	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+	RCC_OscInitStruct.PLL.PLLQ = 4;
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+		Error_Handler();
+	}
+	/** Initializes the CPU, AHB and APB buses clocks
+	 */
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+			| RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK) {
+		Error_Handler();
+	}
 }
 
 /**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART1_UART_Init(void)
-{
+ * @brief USART1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_USART1_UART_Init(void) {
 
-  /* USER CODE BEGIN USART1_Init 0 */
+	/* USER CODE BEGIN USART1_Init 0 */
 
-  /* USER CODE END USART1_Init 0 */
+	/* USER CODE END USART1_Init 0 */
 
-  /* USER CODE BEGIN USART1_Init 1 */
+	/* USER CODE BEGIN USART1_Init 1 */
 
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART1_Init 2 */
+	/* USER CODE END USART1_Init 1 */
+	huart1.Instance = USART1;
+	huart1.Init.BaudRate = 115200;
+	huart1.Init.WordLength = UART_WORDLENGTH_8B;
+	huart1.Init.StopBits = UART_STOPBITS_1;
+	huart1.Init.Parity = UART_PARITY_NONE;
+	huart1.Init.Mode = UART_MODE_TX_RX;
+	huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+	if (HAL_UART_Init(&huart1) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN USART1_Init 2 */
 
-  /* USER CODE END USART1_Init 2 */
+	/* USER CODE END USART1_Init 2 */
 
 }
 
 /**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_GPIO_Init(void) {
+	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
 
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
+	/* GPIO Ports Clock Enable */
+	__HAL_RCC_GPIOH_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, DOUT_LED1_Pin|SEL_1_Pin, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(GPIOB, DOUT_LED1_Pin | SEL_1_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SEL_0_GPIO_Port, SEL_0_Pin, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(SEL_0_GPIO_Port, SEL_0_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(EN_RX_485_GPIO_Port, EN_RX_485_Pin, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(EN_RX_485_GPIO_Port, EN_RX_485_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : DOUT_LED1_Pin */
-  GPIO_InitStruct.Pin = DOUT_LED1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(DOUT_LED1_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pin : DOUT_LED1_Pin */
+	GPIO_InitStruct.Pin = DOUT_LED1_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(DOUT_LED1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SEL_0_Pin */
-  GPIO_InitStruct.Pin = SEL_0_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(SEL_0_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pin : SEL_0_Pin */
+	GPIO_InitStruct.Pin = SEL_0_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(SEL_0_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : DIN_CFIG_Pin */
-  GPIO_InitStruct.Pin = DIN_CFIG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(DIN_CFIG_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pin : DIN_CFIG_Pin */
+	GPIO_InitStruct.Pin = DIN_CFIG_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(DIN_CFIG_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : EN_RX_485_Pin */
-  GPIO_InitStruct.Pin = EN_RX_485_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(EN_RX_485_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pin : EN_RX_485_Pin */
+	GPIO_InitStruct.Pin = EN_RX_485_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(EN_RX_485_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SEL_1_Pin */
-  GPIO_InitStruct.Pin = SEL_1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(SEL_1_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pin : SEL_1_Pin */
+	GPIO_InitStruct.Pin = SEL_1_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(SEL_1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : DIN_TARA_Pin */
-  GPIO_InitStruct.Pin = DIN_TARA_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(DIN_TARA_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pin : DIN_TARA_Pin */
+	GPIO_InitStruct.Pin = DIN_TARA_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(DIN_TARA_GPIO_Port, &GPIO_InitStruct);
 
-  /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+	/* EXTI interrupt init*/
+	HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
 
@@ -377,9 +400,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	 * geradas aqui de forma simulada. Este exemplo é melhorado pois não perdemos nenhuma execução de
 	 * interrupção mesmo que nossa tarefa esteja executando uma chamada de semáforo.
 	 */
-	xSemaphoreGiveFromISR( xCountingSemaphore, &xHigherPriorityTaskWoken );
-	xSemaphoreGiveFromISR( xCountingSemaphore, &xHigherPriorityTaskWoken );
-	xSemaphoreGiveFromISR( xCountingSemaphore, &xHigherPriorityTaskWoken );
+	xSemaphoreGiveFromISR(xCountingSemaphore, &xHigherPriorityTaskWoken);
+	xSemaphoreGiveFromISR(xCountingSemaphore, &xHigherPriorityTaskWoken);
+	xSemaphoreGiveFromISR(xCountingSemaphore, &xHigherPriorityTaskWoken);
 
 	/*
 	 * Passe o valor de xHigherPriorityTaskWoken para portYIELD_FROM_ISR().
@@ -389,34 +412,34 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	 * chamar portYIELD_FROM_ISR() não terá efeito, o máximo que pode ocorrer, é devolver o contexto para o escalonador por
 	 * em execução a tarefa de maior prioridade em estado de disponivel (ready).
 	 */
-	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
-void vTask_Handle (void *pvParameters) {
+void vTask_Handle(void *pvParameters) {
 
 	vPrintString("Task gerenciada pelo semaforo iniciada!");
 
-	for(;;) {
+	for (;;) {
 		/*
 		 * Use o semáforo para aguardar o evento. O semáforo foi criado antes do início do escalonador,
 		 * portanto, antes que essa tarefa fosse executada pela primeira vez ela imediatamente é bloqueada
 		 * indefinidamente, significando que essa chamada de função retornará apenas quando o semáforo for obtido
 		 * com exito, portanto não há necessidade de verificar o valor retornado por xSemaphoreTake()
 		 */
-		xSemaphoreTake( xCountingSemaphore, portMAX_DELAY );
+		xSemaphoreTake(xCountingSemaphore, portMAX_DELAY);
 
 		/*
 		 * Para chegar nesse ponto de codigo, o evento da ISR deve ter ocorrido. Aqui iriamos processar o restante
 		 * do código da ISR fora dela se fosse necessário, ou poderemos executar algum código qualquer baseado no
 		 * evento gerado pelo semaforo na ISR
 		 */
-		vPrintString( "Handler task - Processing event. \r\n");
+		vPrintString("Handler task - Processing event. \r\n");
 	}
 }
 
 void vTask_blink(void *pvParameters) {
 
-	char  c_buff[200];
+	char c_buff[200];
 
 	vPrintString("Entrando da Task de debug");
 
@@ -426,13 +449,15 @@ void vTask_blink(void *pvParameters) {
 
 		vTaskList(c_buff);
 
-		vPrintString("\n\r\nTask-------------State-----Prio------Stack---Num\r\n");
+		vPrintString(
+				"\n\r\nTask-------------State-----Prio------Stack---Num\r\n");
 		vPrintString(c_buff);
 		vPrintString("\n");
 
 		memset(c_buff, 0, sizeof(c_buff));
 
-		sprintf(c_buff, "Free Heap: %d bytes \n\n", xPortGetMinimumEverFreeHeapSize());
+		sprintf(c_buff, "Free Heap: %d bytes \n\n",
+				xPortGetMinimumEverFreeHeapSize());
 		vPrintString(c_buff);
 
 		memset(c_buff, 0, sizeof(c_buff));
@@ -444,6 +469,60 @@ void vTask_blink(void *pvParameters) {
 	}
 	vTaskDelete( NULL);
 }
+
+
+
+
+void vTask_1(void *pvParameters) {
+
+	vPrintString("vTask_1 inciada!\r\n");
+
+	for(;;) {
+		xSemaphoreGive(xCountSemaphore);
+		xSemaphoreGive(xCountSemaphore);
+		xSemaphoreGive(xCountSemaphore);
+
+		vTaskDelay( 500 / portTICK_PERIOD_MS);
+	}
+	vTaskDelay(NULL);
+}
+
+void vTask_2(void *pvParameters) {
+
+	vPrintString("vTask_2 inciada!\r\n");
+
+	for(;;) {
+		xSemaphoreGive(xBinSemaphore);
+		vTaskDelay( 1500 / portTICK_PERIOD_MS);
+	}
+	vTaskDelay(NULL);
+}
+
+void vTask_3(void *pvParameters) {
+
+	vPrintString("vTask_3 inciada!\r\n");
+
+	BaseType_t Semaphore_condition = pdFALSE;
+
+	for(;;) {
+		Semaphore_condition = xSemaphoreTake( xCountSemaphore, pdMS_TO_TICKS( 200 ));
+		if( Semaphore_condition == pdTRUE ) {
+			vPrintString("xCountSemaphore Sinalizado!\r\n\r\n");
+			Semaphore_condition = pdFALSE;
+		} else {
+			vPrintString("xCountSemaphore não sinalizado!\r\n\r\n");
+		}
+
+		Semaphore_condition = xSemaphoreTake( xBinSemaphore, pdMS_TO_TICKS( 200 ));
+		if( Semaphore_condition == pdTRUE) {
+			vPrintString("xBinSemaphore Sinalizado!\r\n\r\n");
+			Semaphore_condition = pdFALSE;
+		} else {
+			vPrintString("xBinSemaphore não sinalizado!\r\n\r\n");
+		}
+	}
+	vTaskDelay(NULL);
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -453,50 +532,46 @@ void vTask_blink(void *pvParameters) {
  * @retval None
  */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
-{
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END 5 */
+void StartDefaultTask(void const *argument) {
+	/* USER CODE BEGIN 5 */
+	/* Infinite loop */
+	for (;;) {
+		osDelay(1);
+	}
+	/* USER CODE END 5 */
 }
 
 /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM4 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  /* USER CODE BEGIN Callback 0 */
+ * @brief  Period elapsed callback in non blocking mode
+ * @note   This function is called  when TIM4 interrupt took place, inside
+ * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+ * a global variable "uwTick" used as application time base.
+ * @param  htim : TIM handle
+ * @retval None
+ */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	/* USER CODE BEGIN Callback 0 */
 
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM4) {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
+	/* USER CODE END Callback 0 */
+	if (htim->Instance == TIM4) {
+		HAL_IncTick();
+	}
+	/* USER CODE BEGIN Callback 1 */
 
-  /* USER CODE END Callback 1 */
+	/* USER CODE END Callback 1 */
 }
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
-void Error_Handler(void)
-{
-  /* USER CODE BEGIN Error_Handler_Debug */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
+void Error_Handler(void) {
+	/* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	__disable_irq();
 	while (1) {
 	}
-  /* USER CODE END Error_Handler_Debug */
+	/* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT

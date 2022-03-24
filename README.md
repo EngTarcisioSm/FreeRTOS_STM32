@@ -371,7 +371,9 @@ ___
     ~~~
 
 ## (019_Semaforos_Binarios_E_Contador)
-
+- 3 Semáforos 
+    - 2 Contadores 
+    - 1 Binário
 
 
 
