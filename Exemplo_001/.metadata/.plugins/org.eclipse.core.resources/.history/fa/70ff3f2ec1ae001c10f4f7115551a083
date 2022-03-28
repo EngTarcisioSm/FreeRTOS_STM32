@@ -399,15 +399,25 @@ void vTask_Handle(void *pvParameters) {
 
 	for (;;) {
 
-		/*Aguarda uma notificação da ISR por não é executado até que ocorra o evento. */
-		ulEventsToProcess = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		/*Aguarda uma notificação da ISR por 500ms. */
+		ulEventsToProcess = ulTaskNotifyTake(pdTRUE, xMaxExpectedBlockTime);
 
-		if ( ulEventsToProcess )
-		{
+		if (ulEventsToProcess) {
+			/*
+			 * Para chegar aqui, pelo menos um evento deve ter ocorrido...
+			 * Um loop é feito aqui até que todos os eventos pendentes tenham sido processados
+			 * (nesse caso, basta imprimir uma mensagem para cada evento).
+			 */
 			while( ulEventsToProcess > 0) {
 				vPrintString("Handler task - Processing event. \r\n");
 				ulEventsToProcess--;
 			}
+		} else {
+			/*
+			 * Se essa parte da função for atingida,
+			 * nenhuma ISR foi recebida no tempo de 500mS
+			 * podendo ser executado algum tratamento de erro ou logica qualquer
+			 */
 		}
 	}
 }

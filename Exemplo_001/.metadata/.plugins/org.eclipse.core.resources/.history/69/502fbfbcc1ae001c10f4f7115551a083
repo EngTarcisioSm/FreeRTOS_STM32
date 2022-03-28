@@ -400,14 +400,11 @@ void vTask_Handle(void *pvParameters) {
 	for (;;) {
 
 		/*Aguarda uma notificação da ISR por não é executado até que ocorra o evento. */
-		ulEventsToProcess = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-		if ( ulEventsToProcess )
-		{
-			while( ulEventsToProcess > 0) {
-				vPrintString("Handler task - Processing event. \r\n");
-				ulEventsToProcess--;
-			}
+		while( ulEventsToProcess > 0) {
+			vPrintString("Handler task - Processing event. \r\n");
+			ulEventsToProcess--;
 		}
 	}
 }

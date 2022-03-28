@@ -434,4 +434,13 @@ ___
         ulEventsToProcess = ulTaskNotifyTake(pdTRUE, xMaxExpectedBlockTime);
         //xMaxExpectedBlockTime marcado como 5000ms
     ~~~
-## (022_TaskNotify_Como_Semaforo_2)
+## (022_TaskNotify_2_EVENTO)
+- Topologia baseada a evento 
+    ~~~c
+        ulEventsToProcess = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        //processos
+    ~~~
+- Nos dois exemplos 022, é necessário a utilização do loop while quando ocorre o evento para decrementar a variavel  ulEventsToProcess
+
+## (022_TaskNotify_3_SEMAFORO_BINARIO)
+- Não é pego o retorno ulTaskNotifyTake()
