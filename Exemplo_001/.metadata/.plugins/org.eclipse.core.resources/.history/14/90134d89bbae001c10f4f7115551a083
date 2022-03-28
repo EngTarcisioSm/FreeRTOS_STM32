@@ -345,11 +345,10 @@ static void MX_GPIO_Init(void) {
 //-----------------------------------------------------------------------------
 //funções de impressão
 void vPrintString(char *pc_uartSend_f) {
-	xSemaphoreTake(xMutex, portMAX_DELAY);
-	{
+	if (xSemaphoreTakeRecursive(xMutexRecursive, portMAX_DELAY) == pdPASS) {
 		vUsartLib_Puts(pc_uartSend_f);
+		xSemaphoreGiveRecursive(xMutexRecursive);
 	}
-	xSemaphoreGive( xMutex );
 }
 void vUsartLib_Putc(UART_HandleTypeDef *huart, char c_data) {
 	//envia um unico caractere

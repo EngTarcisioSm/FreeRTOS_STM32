@@ -345,11 +345,10 @@ static void MX_GPIO_Init(void) {
 //-----------------------------------------------------------------------------
 //funções de impressão
 void vPrintString(char *pc_uartSend_f) {
-	xSemaphoreTake(xMutex, portMAX_DELAY);
-	{
+	if (xSemaphoreTakeRecursive(xMutexRecursive, portMAX_DELAY) == pdPASS) {
 		vUsartLib_Puts(pc_uartSend_f);
+		xSemaphoreGiveRecursive(xMutexRecursive);
 	}
-	xSemaphoreGive( xMutex );
 }
 void vUsartLib_Putc(UART_HandleTypeDef *huart, char c_data) {
 	//envia um unico caractere
@@ -378,7 +377,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 			/*O identificador da tarefa para a qual a notificação esta sendo enviada.
 			 * O identificador foi salvo quando a tarefa foi criada. */
 			xTaskHandle_ISR,
-			xHigherPriorityTaskWoken);
+			pxHigherPriorityTaskWoken);
 
 	/*
 	 * Passa o token xHigherPriorityTaskWoken para portYIELD_FROM_ISR().

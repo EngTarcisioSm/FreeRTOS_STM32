@@ -6772,3 +6772,415 @@ arm-none-eabi-size   Exemplo_01.elf
   27660	    124	  58540	  86324	  15134	Exemplo_01.elf
 Finished building: default.size.stdout
  
+13:41:24 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-gcc "../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.d" -MT"Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.o"
+arm-none-eabi-gcc "../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.d" -MT"Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.o"
+arm-none-eabi-gcc "../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.d" -MT"Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.o"
+arm-none-eabi-gcc "../Middlewares/Third_Party/FreeRTOS/Source/croutine.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Middlewares/Third_Party/FreeRTOS/Source/croutine.d" -MT"Middlewares/Third_Party/FreeRTOS/Source/croutine.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Middlewares/Third_Party/FreeRTOS/Source/croutine.o"
+arm-none-eabi-gcc "../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Middlewares/Third_Party/FreeRTOS/Source/event_groups.d" -MT"Middlewares/Third_Party/FreeRTOS/Source/event_groups.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Middlewares/Third_Party/FreeRTOS/Source/event_groups.o"
+arm-none-eabi-gcc "../Middlewares/Third_Party/FreeRTOS/Source/list.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Middlewares/Third_Party/FreeRTOS/Source/list.d" -MT"Middlewares/Third_Party/FreeRTOS/Source/list.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Middlewares/Third_Party/FreeRTOS/Source/list.o"
+arm-none-eabi-gcc "../Middlewares/Third_Party/FreeRTOS/Source/queue.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Middlewares/Third_Party/FreeRTOS/Source/queue.d" -MT"Middlewares/Third_Party/FreeRTOS/Source/queue.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Middlewares/Third_Party/FreeRTOS/Source/queue.o"
+arm-none-eabi-gcc "../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.d" -MT"Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.o"
+arm-none-eabi-gcc "../Middlewares/Third_Party/FreeRTOS/Source/tasks.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Middlewares/Third_Party/FreeRTOS/Source/tasks.d" -MT"Middlewares/Third_Party/FreeRTOS/Source/tasks.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Middlewares/Third_Party/FreeRTOS/Source/tasks.o"
+arm-none-eabi-gcc "../Middlewares/Third_Party/FreeRTOS/Source/timers.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Middlewares/Third_Party/FreeRTOS/Source/timers.d" -MT"Middlewares/Third_Party/FreeRTOS/Source/timers.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Middlewares/Third_Party/FreeRTOS/Source/timers.o"
+arm-none-eabi-gcc "../Core/Src/freertos.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/freertos.d" -MT"Core/Src/freertos.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/freertos.o"
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'vUsartLib_Putc':
+../Core/Src/main.c:373:27: warning: pointer targets in passing argument 2 of 'HAL_UART_Transmit' differ in signedness [-Wpointer-sign]
+  373 |  HAL_UART_Transmit(huart, &c_data, 1, 10);
+      |                           ^~~~~~~
+      |                           |
+      |                           char *
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:406,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:21:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:723:73: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+  723 | HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                                ~~~~~~~~~^~~~~
+../Core/Src/main.c: In function 'vTask_1':
+../Core/Src/main.c:483:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  483 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'vTask_2':
+../Core/Src/main.c:494:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  494 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'vTask_3':
+../Core/Src/main.c:520:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  520 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'StartDefaultTask':
+../Core/Src/main.c:535:3: warning: implicit declaration of function 'osDelay'; did you mean 'vTaskDelay'? [-Wimplicit-function-declaration]
+  535 |   osDelay(1);
+      |   ^~~~~~~
+      |   vTaskDelay
+arm-none-eabi-gcc -o "Exemplo_01.elf" @"objects.list"   -mcpu=cortex-m4 -T"P:\ESTUDOS\freeRTOS\Projects\Exemplo_001\Exemplo_01\STM32F401RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Exemplo_01.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Exemplo_01.elf
+ 
+arm-none-eabi-size   Exemplo_01.elf 
+arm-none-eabi-objdump -h -S  Exemplo_01.elf  > "Exemplo_01.list"
+arm-none-eabi-objcopy  -O binary  Exemplo_01.elf  "Exemplo_01.bin"
+   text	   data	    bss	    dec	    hex	filename
+  27660	    124	  58540	  86324	  15134	Exemplo_01.elf
+Finished building: default.size.stdout
+ 
+Finished building: Exemplo_01.bin
+ 
+Finished building: Exemplo_01.list
+ 
+14:19:31 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+In file included from ../Core/Src/main.c:29:
+../Core/Src/main.c: In function 'vPrintString':
+../Core/Src/main.c:348:30: error: 'xMutexRecursive' undeclared (first use in this function)
+  348 |  if (xSemaphoreTakeRecursive(xMutexRecursive, portMAX_DELAY) == pdPASS) {
+      |                              ^~~~~~~~~~~~~~~
+../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h:383:84: note: in definition of macro 'xSemaphoreTakeRecursive'
+  383 |  #define xSemaphoreTakeRecursive( xMutex, xBlockTime ) xQueueTakeMutexRecursive( ( xMutex ), ( xBlockTime ) )
+      |                                                                                    ^~~~~~
+../Core/Src/main.c:348:30: note: each undeclared identifier is reported only once for each function it appears in
+  348 |  if (xSemaphoreTakeRecursive(xMutexRecursive, portMAX_DELAY) == pdPASS) {
+      |                              ^~~~~~~~~~~~~~~
+../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h:383:84: note: in definition of macro 'xSemaphoreTakeRecursive'
+  383 |  #define xSemaphoreTakeRecursive( xMutex, xBlockTime ) xQueueTakeMutexRecursive( ( xMutex ), ( xBlockTime ) )
+      |                                                                                    ^~~~~~
+../Core/Src/main.c: In function 'vUsartLib_Putc':
+../Core/Src/main.c:355:27: warning: pointer targets in passing argument 2 of 'HAL_UART_Transmit' differ in signedness [-Wpointer-sign]
+  355 |  HAL_UART_Transmit(huart, &c_data, 1, 10);
+      |                           ^~~~~~~
+      |                           |
+      |                           char *
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:406,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:21:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:723:73: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+  723 | HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                                ~~~~~~~~~^~~~~
+../Core/Src/main.c: In function 'HAL_GPIO_EXTI_Callback':
+../Core/Src/main.c:380:4: error: 'pxHigherPriorityTaskWoken' undeclared (first use in this function); did you mean 'xHigherPriorityTaskWoken'?
+  380 |    pxHigherPriorityTaskWoken);
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~~
+      |    xHigherPriorityTaskWoken
+../Core/Src/main.c: In function 'vTask_Handle':
+../Core/Src/main.c:397:2: error: unknown type name 'uint21_t'; did you mean 'uint64_t'?
+  397 |  uint21_t ulEventsToProcess = 0;
+      |  ^~~~~~~~
+      |  uint64_t
+../Core/Src/main.c: In function 'vTask_1':
+../Core/Src/main.c:465:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  465 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'vTask_2':
+../Core/Src/main.c:476:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  476 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'vTask_3':
+../Core/Src/main.c:487:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  487 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'StartDefaultTask':
+../Core/Src/main.c:502:3: warning: implicit declaration of function 'osDelay'; did you mean 'vTaskDelay'? [-Wimplicit-function-declaration]
+  502 |   osDelay(1);
+      |   ^~~~~~~
+      |   vTaskDelay
+At top level:
+../Core/Src/main.c:65:21: warning: 'xTaskHandle_Count' defined but not used [-Wunused-variable]
+   65 | static TaskHandle_t xTaskHandle_Count;
+      |                     ^~~~~~~~~~~~~~~~~
+../Core/Src/main.c:64:21: warning: 'xTaskHandle_Bin' defined but not used [-Wunused-variable]
+   64 | static TaskHandle_t xTaskHandle_Bin;
+      |                     ^~~~~~~~~~~~~~~
+make: *** [Core/Src/subdir.mk:40: Core/Src/main.o] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+14:19:40 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+In file included from ../Core/Src/main.c:29:
+../Core/Src/main.c: In function 'vPrintString':
+../Core/Src/main.c:348:30: error: 'xMutexRecursive' undeclared (first use in this function)
+  348 |  if (xSemaphoreTakeRecursive(xMutexRecursive, portMAX_DELAY) == pdPASS) {
+      |                              ^~~~~~~~~~~~~~~
+../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h:383:84: note: in definition of macro 'xSemaphoreTakeRecursive'
+  383 |  #define xSemaphoreTakeRecursive( xMutex, xBlockTime ) xQueueTakeMutexRecursive( ( xMutex ), ( xBlockTime ) )
+      |                                                                                    ^~~~~~
+../Core/Src/main.c:348:30: note: each undeclared identifier is reported only once for each function it appears in
+  348 |  if (xSemaphoreTakeRecursive(xMutexRecursive, portMAX_DELAY) == pdPASS) {
+      |                              ^~~~~~~~~~~~~~~
+../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h:383:84: note: in definition of macro 'xSemaphoreTakeRecursive'
+  383 |  #define xSemaphoreTakeRecursive( xMutex, xBlockTime ) xQueueTakeMutexRecursive( ( xMutex ), ( xBlockTime ) )
+      |                                                                                    ^~~~~~
+../Core/Src/main.c: In function 'vUsartLib_Putc':
+../Core/Src/main.c:355:27: warning: pointer targets in passing argument 2 of 'HAL_UART_Transmit' differ in signedness [-Wpointer-sign]
+  355 |  HAL_UART_Transmit(huart, &c_data, 1, 10);
+      |                           ^~~~~~~
+      |                           |
+      |                           char *
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:406,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:21:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:723:73: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+  723 | HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                                ~~~~~~~~~^~~~~
+../Core/Src/main.c: In function 'HAL_GPIO_EXTI_Callback':
+../Core/Src/main.c:380:4: error: 'pxHigherPriorityTaskWoken' undeclared (first use in this function); did you mean 'xHigherPriorityTaskWoken'?
+  380 |    pxHigherPriorityTaskWoken);
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~~
+      |    xHigherPriorityTaskWoken
+../Core/Src/main.c: In function 'vTask_1':
+../Core/Src/main.c:465:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  465 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'vTask_2':
+../Core/Src/main.c:476:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  476 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'vTask_3':
+../Core/Src/main.c:487:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  487 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'StartDefaultTask':
+../Core/Src/main.c:502:3: warning: implicit declaration of function 'osDelay'; did you mean 'vTaskDelay'? [-Wimplicit-function-declaration]
+  502 |   osDelay(1);
+      |   ^~~~~~~
+      |   vTaskDelay
+At top level:
+../Core/Src/main.c:65:21: warning: 'xTaskHandle_Count' defined but not used [-Wunused-variable]
+   65 | static TaskHandle_t xTaskHandle_Count;
+      |                     ^~~~~~~~~~~~~~~~~
+../Core/Src/main.c:64:21: warning: 'xTaskHandle_Bin' defined but not used [-Wunused-variable]
+   64 | static TaskHandle_t xTaskHandle_Bin;
+      |                     ^~~~~~~~~~~~~~~
+make: *** [Core/Src/subdir.mk:40: Core/Src/main.o] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+14:19:58 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+In file included from ../Core/Src/main.c:29:
+../Core/Src/main.c: In function 'vPrintString':
+../Core/Src/main.c:348:30: error: 'xMutexRecursive' undeclared (first use in this function)
+  348 |  if (xSemaphoreTakeRecursive(xMutexRecursive, portMAX_DELAY) == pdPASS) {
+      |                              ^~~~~~~~~~~~~~~
+../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h:383:84: note: in definition of macro 'xSemaphoreTakeRecursive'
+  383 |  #define xSemaphoreTakeRecursive( xMutex, xBlockTime ) xQueueTakeMutexRecursive( ( xMutex ), ( xBlockTime ) )
+      |                                                                                    ^~~~~~
+../Core/Src/main.c:348:30: note: each undeclared identifier is reported only once for each function it appears in
+  348 |  if (xSemaphoreTakeRecursive(xMutexRecursive, portMAX_DELAY) == pdPASS) {
+      |                              ^~~~~~~~~~~~~~~
+../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h:383:84: note: in definition of macro 'xSemaphoreTakeRecursive'
+  383 |  #define xSemaphoreTakeRecursive( xMutex, xBlockTime ) xQueueTakeMutexRecursive( ( xMutex ), ( xBlockTime ) )
+      |                                                                                    ^~~~~~
+../Core/Src/main.c: In function 'vUsartLib_Putc':
+../Core/Src/main.c:355:27: warning: pointer targets in passing argument 2 of 'HAL_UART_Transmit' differ in signedness [-Wpointer-sign]
+  355 |  HAL_UART_Transmit(huart, &c_data, 1, 10);
+      |                           ^~~~~~~
+      |                           |
+      |                           char *
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:406,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:21:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:723:73: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+  723 | HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                                ~~~~~~~~~^~~~~
+../Core/Src/main.c: In function 'HAL_GPIO_EXTI_Callback':
+../Core/Src/main.c:380:4: warning: passing argument 2 of 'vTaskNotifyGiveFromISR' makes pointer from integer without a cast [-Wint-conversion]
+  380 |    xHigherPriorityTaskWoken);
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~
+      |    |
+      |    BaseType_t {aka long int}
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:2122:70: note: expected 'BaseType_t *' {aka 'long int *'} but argument is of type 'BaseType_t' {aka 'long int'}
+ 2122 | void vTaskNotifyGiveFromISR( TaskHandle_t xTaskToNotify, BaseType_t *pxHigherPriorityTaskWoken ) PRIVILEGED_FUNCTION;
+      |                                                          ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c: In function 'vTask_1':
+../Core/Src/main.c:465:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  465 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'vTask_2':
+../Core/Src/main.c:476:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  476 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'vTask_3':
+../Core/Src/main.c:487:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  487 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'StartDefaultTask':
+../Core/Src/main.c:502:3: warning: implicit declaration of function 'osDelay'; did you mean 'vTaskDelay'? [-Wimplicit-function-declaration]
+  502 |   osDelay(1);
+      |   ^~~~~~~
+      |   vTaskDelay
+At top level:
+../Core/Src/main.c:65:21: warning: 'xTaskHandle_Count' defined but not used [-Wunused-variable]
+   65 | static TaskHandle_t xTaskHandle_Count;
+      |                     ^~~~~~~~~~~~~~~~~
+../Core/Src/main.c:64:21: warning: 'xTaskHandle_Bin' defined but not used [-Wunused-variable]
+   64 | static TaskHandle_t xTaskHandle_Bin;
+      |                     ^~~~~~~~~~~~~~~
+make: *** [Core/Src/subdir.mk:40: Core/Src/main.o] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+14:21:42 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F401xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'vUsartLib_Putc':
+../Core/Src/main.c:356:27: warning: pointer targets in passing argument 2 of 'HAL_UART_Transmit' differ in signedness [-Wpointer-sign]
+  356 |  HAL_UART_Transmit(huart, &c_data, 1, 10);
+      |                           ^~~~~~~
+      |                           |
+      |                           char *
+In file included from ../Core/Inc/stm32f4xx_hal_conf.h:406,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/main.h:31,
+                 from ../Core/Src/main.c:21:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:723:73: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+  723 | HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);
+      |                                                                ~~~~~~~~~^~~~~
+../Core/Src/main.c: In function 'HAL_GPIO_EXTI_Callback':
+../Core/Src/main.c:381:4: warning: passing argument 2 of 'vTaskNotifyGiveFromISR' makes pointer from integer without a cast [-Wint-conversion]
+  381 |    xHigherPriorityTaskWoken);
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~
+      |    |
+      |    BaseType_t {aka long int}
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:2122:70: note: expected 'BaseType_t *' {aka 'long int *'} but argument is of type 'BaseType_t' {aka 'long int'}
+ 2122 | void vTaskNotifyGiveFromISR( TaskHandle_t xTaskToNotify, BaseType_t *pxHigherPriorityTaskWoken ) PRIVILEGED_FUNCTION;
+      |                                                          ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c: In function 'vTask_1':
+../Core/Src/main.c:466:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  466 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'vTask_2':
+../Core/Src/main.c:477:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  477 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'vTask_3':
+../Core/Src/main.c:488:13: warning: passing argument 1 of 'vTaskDelay' makes integer from pointer without a cast [-Wint-conversion]
+  488 |  vTaskDelay(NULL);
+      |             ^~~~
+      |             |
+      |             void *
+In file included from ../Core/Src/main.c:27:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:758:35: note: expected 'TickType_t' {aka 'const long unsigned int'} but argument is of type 'void *'
+  758 | void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
+      |                  ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'StartDefaultTask':
+../Core/Src/main.c:503:3: warning: implicit declaration of function 'osDelay'; did you mean 'vTaskDelay'? [-Wimplicit-function-declaration]
+  503 |   osDelay(1);
+      |   ^~~~~~~
+      |   vTaskDelay
+At top level:
+../Core/Src/main.c:65:21: warning: 'xTaskHandle_Count' defined but not used [-Wunused-variable]
+   65 | static TaskHandle_t xTaskHandle_Count;
+      |                     ^~~~~~~~~~~~~~~~~
+../Core/Src/main.c:64:21: warning: 'xTaskHandle_Bin' defined but not used [-Wunused-variable]
+   64 | static TaskHandle_t xTaskHandle_Bin;
+      |                     ^~~~~~~~~~~~~~~
+arm-none-eabi-gcc -o "Exemplo_01.elf" @"objects.list"   -mcpu=cortex-m4 -T"P:\ESTUDOS\freeRTOS\Projects\Exemplo_001\Exemplo_01\STM32F401RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Exemplo_01.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: Exemplo_01.elf
+ 
+arm-none-eabi-size   Exemplo_01.elf 
+arm-none-eabi-objdump -h -S  Exemplo_01.elf  > "Exemplo_01.list"
+arm-none-eabi-objcopy  -O binary  Exemplo_01.elf  "Exemplo_01.bin"
+   text	   data	    bss	    dec	    hex	filename
+  26796	    124	  58532	  85452	  14dcc	Exemplo_01.elf
+Finished building: default.size.stdout
+ 
+Finished building: Exemplo_01.bin
+ 
+Finished building: Exemplo_01.list
+ 
+14:22:25 **** Incremental Build of configuration Debug for project Exemplo_01 ****
+make -j8 all 
+arm-none-eabi-size   Exemplo_01.elf 
+   text	   data	    bss	    dec	    hex	filename
+  26796	    124	  58532	  85452	  14dcc	Exemplo_01.elf
+Finished building: default.size.stdout
+ 

@@ -403,3 +403,35 @@ ___
 - Takes internos n podem ser bloqueantes, devem ter um valor de timeout
 - Quando existe algum processo que usa funções e essas funções utilizam outras funções, sendo que alguma dessas funções internas pode ser utilizada em algum outro processo ou tarefa é recomendado a utilização de mutex recursivas 
     - Exemplo: SPI desenvolvidas na mão, existem várias funções, cada uma delas podendo ser usada por um dispositivo específico 
+
+## (022_TaskNotify_Como_Semaforo)
+- É necessário de configurar as TaskNotify no arquivo de configuração 
+    ~~~c
+        #define configUSE_TASK_NOTIFICATIONS			1
+    ~~~
+- TaskNotify é implementado sobre a biblioteca "task.h"
+- Para sua utilização é necessário a utilização de TaskHandle
+    ~~~c
+        static TaskHandle_t xTaskHandle_ISR;
+    ~~~
+- Não é necessário criar nenhum objeto do FreeRTOS
+    - A unica memoria utilizada é quando se declara o Handle 
+- Observação:
+    - Não substitui 100% o uso de filas (simula bem o uso de mailbox) apenas o uso de semáforos 
+- Para utilizar o TaskNotify, ele é passado como ultimo parametro na criação da tarefa que o utilizará 
+    - Exemplo:
+    ~~~c
+        if ((xTaskCreate(vTask_Handle, "Task handle", configMINIMAL_STACK_SIZE * 2,
+	        NULL, 1, &xTaskHandle_ISR)) != pdTRUE) {
+		    vPrintString(
+				"não foi possivel alocar tarefa vTaskHandle no escalonador\n");
+        } else {
+            vPrintString("Tarefa vTaskHandle criada com sucesso!\n");
+        }
+    ~~~
+- Topologia deste exemplo baseado a timeout, pois utiliza um periodo de tempo pré definifo 
+    ~~~c
+        ulEventsToProcess = ulTaskNotifyTake(pdTRUE, xMaxExpectedBlockTime);
+        //xMaxExpectedBlockTime marcado como 5000ms
+    ~~~
+## (022_TaskNotify_Como_Semaforo_2)
