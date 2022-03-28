@@ -7,10 +7,10 @@ main.c:354:6:vUsartLib_Putc	16	static
 main.c:358:6:vUsartLib_Puts	16	static
 main.c:365:6:HAL_GPIO_EXTI_Callback	24	static,ignoring_inline_asm
 main.c:392:6:vTask_Handle	24	static
-main.c:415:6:vTask_blink	216	static
-main.c:448:6:vTask_1	16	static
-main.c:459:6:vTask_2	16	static
-main.c:470:6:vTask_3	16	static
-main.c:489:6:StartDefaultTask	16	static
-main.c:506:6:HAL_TIM_PeriodElapsedCallback	16	static
-main.c:522:6:Error_Handler	4	static,ignoring_inline_asm
+main.c:406:6:vTask_blink	216	static
+main.c:439:6:vTask_1	16	static
+main.c:450:6:vTask_2	16	static
+main.c:461:6:vTask_3	16	static
+main.c:480:6:StartDefaultTask	16	static
+main.c:497:6:HAL_TIM_PeriodElapsedCallback	16	static
+main.c:513:6:Error_Handler	4	static,ignoring_inline_asm

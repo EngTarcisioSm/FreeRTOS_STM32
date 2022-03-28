@@ -395,11 +395,20 @@ void vTask_Handle(void *pvParameters) {
 
 	const TickType_t xMaxExpectedBlockTime = pdMS_TO_TICKS( 500 );
 
+	uint32_t ulEventsToProcess = 0;
+
 	for (;;) {
 
 		/*Aguarda uma notificação da ISR por não é executado até que ocorra o evento. */
-		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-		vPrintString("Handler task - Processing event. \r\n");
+		ulEventsToProcess = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+		if ( ulEventsToProcess )
+		{
+			while( ulEventsToProcess > 0) {
+				vPrintString("Handler task - Processing event. \r\n");
+				ulEventsToProcess--;
+			}
+		}
 	}
 }
 
