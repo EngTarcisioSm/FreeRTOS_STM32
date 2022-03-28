@@ -58,15 +58,13 @@ UART_HandleTypeDef huart1;
 
 //osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
-//static EventGroupHandle_t xHandle_Event_Group;
-SemaphoreHandle_t xCountingSemaphore = NULL;
-SemaphoreHandle_t xCountSemaphore = NULL;
-SemaphoreHandle_t xBinSemaphore = NULL;
-SemaphoreHandle_t xMutex = NULL;
+SemaphoreHandle_t xCountingSemaphore = NULL,
+		xCountSemaphore = NULL,
+		xBinSemaphore = NULL,
+		xMutex = NULL,
+		xMutexRecursive = NULL;
 
-//criação de uma variavel que aloca conjunto de queues
-
-//SemaphoreHandle_t xMutex;
+const TickType_t xMaxBlock20ms = pdMS_TO_TICKS( 20 );
 
 //funções de escrita serial
 void vPrintString(char *pc_uartSend_f);
@@ -138,6 +136,7 @@ int main(void) {
 	xCountSemaphore = xSemaphoreCreateCounting(5, 0);
 	xBinSemaphore = xSemaphoreCreateBinary();
 	xMutex = xSemaphoreCreateMutex();
+	xMutexRecursive = xSemaphoreCreateRecursiveMutex();
 
 	if (xCountingSemaphore != NULL)
 		vPrintString("xCountingSemaphore criado com sucesso\n");
@@ -147,6 +146,8 @@ int main(void) {
 		vPrintString("xBinSemaphore criado com sucesso\n");
 	if (xMutex != NULL)
 			vPrintString("xMutex criado com sucesso\n");
+	if (xMutexRecursive != NULL)
+			vPrintString("xMutexRecursive criado com sucesso\n");
 	/* USER CODE END RTOS_SEMAPHORES */
 
 	/* USER CODE BEGIN RTOS_TIMERS */
@@ -166,8 +167,7 @@ int main(void) {
 	/* add threads, ... */
 	if ((xTaskCreate(vTask_blink, "Task Blink", configMINIMAL_STACK_SIZE * 2,
 	NULL, 1, NULL)) != pdTRUE) {
-		vPrintString(
-				"não foi possivel alocar tarefa Blink vTaskBlink no escalonador\n");
+		vPrintString("não foi possivel alocar tarefa Blink vTaskBlink no escalonador\n");
 	} else {
 		vPrintString("Tarefa Task Blink criada com sucesso!\n");
 	}
@@ -361,31 +361,25 @@ static void MX_GPIO_Init(void) {
 //-----------------------------------------------------------------------------
 //funções de impressão
 void vPrintString(char *pc_uartSend_f) {
-	//acionamentos necessários para chavear e acionar o rs485 em modo de transmissão
-	HAL_GPIO_WritePin(SEL_0_GPIO_Port, SEL_0_Pin, Bit_RESET);
-	HAL_GPIO_WritePin(SEL_1_GPIO_Port, SEL_1_Pin, Bit_RESET);
-	HAL_GPIO_WritePin(EN_RX_485_GPIO_Port, EN_RX_485_Pin, Bit_RESET);
-//	taskENTER_CRITICAL();	//removido
-	xSemaphoreTake(xMutex, portMAX_DELAY);
-	{
+	if(xSemaphoreTakeRecursive( xMutexRecursive, portMAX_DELAY) == pdPASS){
 		vUsartLib_Puts(pc_uartSend_f);
+		xSemaphoreGiveRecursive(xMutexRecursive);
 	}
-//	taskEXIT_CRITICAL();		//removido
-	//acionamentos necessários para chavear e acionar o rs485 em modo de recepção
-	xSemaphoreGive(xMutex);
-	HAL_GPIO_WritePin(SEL_0_GPIO_Port, SEL_0_Pin, Bit_SET);
-	HAL_GPIO_WritePin(SEL_1_GPIO_Port, SEL_1_Pin, Bit_SET);
-	HAL_GPIO_WritePin(EN_RX_485_GPIO_Port, EN_RX_485_Pin, Bit_SET);
 }
 void vUsartLib_Putc(UART_HandleTypeDef *huart, char c_data) {
+
+	xSemaphoreTakeRecursive( xMutexRecursive, xMaxBlock20ms);
 	//envia um unico caractere
 	HAL_UART_Transmit(huart, &c_data, 1, 10);
+	xSemaphoreGiveRecursive(xMutexRecursive);
 }
 void vUsartLib_Puts(char *c_data) {
+	xSemaphoreTakeRecursive( xMutexRecursive, xMaxBlock20ms);
 	//roda todo o buffer até encontrar 0x00
 	while (*c_data) {
 		vUsartLib_Putc(&huart1, *c_data++);
 	}
+	xSemaphoreGiveRecursive(xMutexRecursive);
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
@@ -445,11 +439,11 @@ void vTask_blink(void *pvParameters) {
 
 	char c_buff[200];
 
-	vPrintString("Entrando da Task de debug");
+//	vPrintString("Entrando da Task de debug");
 
 	for (;;) {
 		//Altera o estado do led
-		//HAL_GPIO_TogglePin(DOUT_LED1_GPIO_Port, DOUT_LED1_Pin);
+		HAL_GPIO_TogglePin(DOUT_LED1_GPIO_Port, DOUT_LED1_Pin);
 
 		vTaskList(c_buff);
 
@@ -482,8 +476,6 @@ void vTask_1(void *pvParameters) {
 	vPrintString("vTask_1 inciada!\r\n");
 
 	for(;;) {
-		xSemaphoreGive(xCountSemaphore);
-		xSemaphoreGive(xCountSemaphore);
 		xSemaphoreGive(xCountSemaphore);
 
 		vTaskDelay( 500 / portTICK_PERIOD_MS);

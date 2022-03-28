@@ -375,7 +375,7 @@ ___
     - 2 Contadores 
     - 1 Binário
 
-## (020_Semaforos_Binarios_E_Contador)
+## (020_Mutex)
 - Para a utilização de Mutex é necessário efetuar sua habilitação no arquivo de configuração do FreeRTOS
     ~~~c
         #define configUSE_MUTEXES						1
@@ -389,6 +389,17 @@ ___
 - A mutex neste exemplo é utilizada para gerenciar o acesso ao barramento UART na função vPrintString(char *pc_uartSend_f)
 - Para utilização é necessário incluir as bibliotecas de semaforos e filas 
 
-
-https://www.youtube.com/watch?v=QM-6-hMB4To
-46:26 / 1:55:09
+## (021_Mutex_Recursiva)
+- Para a utilização de Mutex recursivas é necessárui efetuar a configuração do recurso no arquivo de configuração 
+    ~~~c
+        #define configUSE_RECURSIVE_MUTEXES				1
+    ~~~
+- Para criar a Mutex Recursiva utiliza a função 
+    ~~~c
+        xMutexRecursive = xSemaphoreCreateRecursiveMutex();
+    ~~~
+- As mutex recursivas ocorre o incremento de uma mutex unica em um processo, e ao sair desse processo a mutex é decrementada
+- Para todo take dado é necessário um give;
+- Takes internos n podem ser bloqueantes, devem ter um valor de timeout
+- Quando existe algum processo que usa funções e essas funções utilizam outras funções, sendo que alguma dessas funções internas pode ser utilizada em algum outro processo ou tarefa é recomendado a utilização de mutex recursivas 
+    - Exemplo: SPI desenvolvidas na mão, existem várias funções, cada uma delas podendo ser usada por um dispositivo específico 

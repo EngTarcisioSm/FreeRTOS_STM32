@@ -51,6 +51,6 @@ cmsis_os.c:1596:10:osMessageWaiting	16	static
 cmsis_os.c:1612:10:osMessageAvailableSpace	16	static
 cmsis_os.c:1622:10:osMessageDelete	16	static
 cmsis_os.c:1638:11:osRecursiveMutexCreate	16	static
-cmsis_os.c:1664:10:osRecursiveMutexRelease	16	static
-cmsis_os.c:1685:10:osRecursiveMutexWait	16	static
+cmsis_os.c:1664:10:osRecursiveMutexRelease	24	static
+cmsis_os.c:1685:10:osRecursiveMutexWait	24	static
 cmsis_os.c:1724:10:osSemaphoreGetCount	16	static

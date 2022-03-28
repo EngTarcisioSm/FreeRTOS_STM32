@@ -53,6 +53,8 @@
 #define configTIMER_QUEUE_LENGTH				10
 #define configTIMER_TASK_STACK_DEPTH			256
 #define configUSE_COUNTING_SEMAPHORES			1
+
+#define configUSE_RECURSIVE_MUTEXES				1
 /* Section where include file can be added */
 /* USER CODE END Includes */
 
