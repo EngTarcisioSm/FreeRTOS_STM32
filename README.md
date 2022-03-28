@@ -403,3 +403,8 @@ ___
 - Takes internos n podem ser bloqueantes, devem ter um valor de timeout
 - Quando existe algum processo que usa funções e essas funções utilizam outras funções, sendo que alguma dessas funções internas pode ser utilizada em algum outro processo ou tarefa é recomendado a utilização de mutex recursivas 
     - Exemplo: SPI desenvolvidas na mão, existem várias funções, cada uma delas podendo ser usada por um dispositivo específico 
+
+- OBSERVAÇÃO: 
+    - EXEMPLO DE MUTEX FOI SOBRESCRITA PELA MUTEX RECURSIVA NO EXEMPLO 020 NO GITHUB
+
+    ## (022_TASKNOTIFY_COMO_SEMAFORO)
