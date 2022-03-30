@@ -444,3 +444,8 @@ ___
 
 ## (022_TaskNotify_3_SEMAFORO_BINARIO)
 - Não é pego o retorno ulTaskNotifyTake()
+
+## (023_TaskNotify_4_SEMAFORO_CONTADOR)
+
+
+
