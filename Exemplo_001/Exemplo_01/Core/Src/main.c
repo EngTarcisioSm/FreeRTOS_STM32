@@ -81,6 +81,7 @@ void vTask_Handle(void *pvParameters);
 void vTask_1(void *pvParameters);
 void vTask_2(void *pvParameters);
 void vTask_3(void *pvParameters);
+void vTask_4(void *pvParameters);
 
 /* USER CODE END PFP */
 
@@ -173,17 +174,24 @@ int main(void) {
 	}
 
 	if ((xTaskCreate(vTask_2, "vTask_2", configMINIMAL_STACK_SIZE,
-	NULL, 1, NULL)) != pdTRUE) {
+	NULL, 1, &xTaskHandle_Bin)) != pdTRUE) {
 		vPrintString("não foi possivel alocar tarefa vTask_2 no escalonador\n");
 	} else {
 		vPrintString("Tarefa vTask_2 criada com sucesso!\n");
 	}
 
 	if ((xTaskCreate(vTask_3, "vTask_3", configMINIMAL_STACK_SIZE,
-	NULL, 1, NULL)) != pdTRUE) {
+	NULL, 1, &xTaskHandle_Bin)) != pdTRUE) {
 		vPrintString("não foi possivel alocar tarefa vTask_3 no escalonador\n");
 	} else {
 		vPrintString("Tarefa vTask_3 criada com sucesso!\n");
+	}
+
+	if ((xTaskCreate(vTask_4, "vTask_4", configMINIMAL_STACK_SIZE,
+	NULL, 1, &xTaskHandle_Count)) != pdTRUE) {
+		vPrintString("não foi possivel alocar tarefa vTask_4 no escalonador\n");
+	} else {
+		vPrintString("Tarefa vTask_4 criada com sucesso!\n");
 	}
 
 	vTaskStartScheduler();
@@ -398,8 +406,9 @@ void vTask_1(void *pvParameters) {
 	vPrintString("vTask_1 inciada!\r\n");
 
 	for (;;) {
-		//xSemaphoreGive(xCountSemaphore);
-		vTaskDelay(200 / portTICK_PERIOD_MS);
+		xTaskNotifyGive(xTaskHandle_Count);
+		xTaskNotifyGive(xTaskHandle_Count);
+		vTaskDelay(2000 / portTICK_PERIOD_MS);
 	}
 	vTaskDelay(NULL);
 }
@@ -409,7 +418,7 @@ void vTask_2(void *pvParameters) {
 	vPrintString("vTask_2 inciada!\r\n");
 
 	for (;;) {
-		//xSemaphoreGive(xBinSemaphore);
+		xTaskNotifyGive(xTaskHandle_Bin);
 		vTaskDelay(1500 / portTICK_PERIOD_MS);
 	}
 	vTaskDelay(NULL);
@@ -419,10 +428,68 @@ void vTask_3(void *pvParameters) {
 
 	vPrintString("vTask_3 inciada!\r\n");
 
+	const TickType_t xMaxExpectedBlockTime = pdMS_TO_TICKS( 500 );
+
 	for (;;) {
-		vTaskDelay(500 / portTICK_PERIOD_MS);
+		/*Aguarda uma notificação da ISR por 500ms. */
+		/** pdTRUE Limpa o buffer contador, trabalhando somente como semaforo binario.
+		 *	pdFALSE incrementa a variavel ulEvents com o numero de Give gerados na ISR, assim trabalhando como semaforo contador.
+		 *	Cada chamada TaskNotify decrementa a quantidade de ISR geradas pelo Give.
+		 */
+
+		/*Quando xClearOnExit é pdFALSE,
+		 * chamar ulTaskNotifyTake() só poderá diminuir (reduzir em um) o valor de notificação da tarefa de chamada,
+		 * em vez de reduzi-lo até zero. A contagem de notificações é a diferença entre o número de eventos que ocorreram e
+		 * o número de eventos que foram processados. Simplificando o decremento da notificação dentro da função ulTaskNotifyTake
+		 * não precisamos utilizar uma variavel para fazer a contagem
+		 */
+
+		if (ulTaskNotifyTake(pdFALSE, xMaxExpectedBlockTime) != 0) {
+			// Para chegar aqui, pelo menos um evento deve ter ocorrido..
+
+			vPrintString("vTask3 - Processing event.\r\n");
+		} else {
+			/* Se essa parte da função for atingida,
+			 * nenhuma ISR foi recebida no tempo de 500mS
+			 * podendo ser executado algum tratamento de erro ou logica qualquer. */
+			vPrintString("Time-out TaskNotify vTask3.\r\n");
+		}
 	}
 	vTaskDelay(NULL);
+}
+
+void vTask_4(void *pvParameters) {
+
+	vPrintString("vTask_4 iniciada!\r\n");
+	const TickType_t xMaxExpectedBlockTime = pdMS_TO_TICKS(500);
+
+	uint32_t ulNotifiedValue = 0;
+
+	for (;;) {
+		/*Aguarda uma notificação da ISR por 500ms. */
+		/** Agora iremos trabalhar com uma metodologia mais eficiente
+		 * O valor da quatidade de gives gerados como semaforo contador é armazenado em ulNotifiedValue
+		 * e trataremos cada chamada sem precisar chamar a função ulTaskNotifyTake como no exemplo passado,
+		 * assim dedicando mais desempenho a tarefa.
+		 */
+		ulNotifiedValue = ulTaskNotifyTake(pdTRUE, xMaxExpectedBlockTime);
+
+		if (ulNotifiedValue != 0) {
+			// Para chegar aqui, pelo menos um evento deve ter ocorrido..
+
+			vPrintString("Entrando no semph contador com tak notify!\r\n");
+
+			//enquanto o retorno for diferente de 0, executo o tratamento da ISR
+			while (ulNotifiedValue--) {
+				vPrintString("vTask4 - Processing event.\r\n");
+			}
+		} else {
+			/* Se essa parte da função for atingida,
+			 * nenhuma ISR foi recebida no tempo de 500mS
+			 * podendo ser executado algum tratamento de erro ou logica qualquer. */
+			vPrintString("Time-out TaskNotify. vTask4\r\n");
+		}
+	}
 }
 void vTask_Handle(void *pvParameters) {
 
@@ -449,7 +516,7 @@ void vTask_Handle(void *pvParameters) {
 
 		ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
 		{
-			vPrintString( "Handler task - Processing event.\r\n");
+			vPrintString("Handler task - Processing event.\r\n");
 		}
 
 //		if( ulTaskNotifyTake(pdFALSE, xMaxExpectedBlockTime) != 0 ) {

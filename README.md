@@ -463,7 +463,13 @@ ___
 ## (023_TaskNotify_SEMAFORO_CONTADOR_2)
 - Lógica baseada a evento com:
 ~~~c
-
+    ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
 ~~~
+    - Valor do segundo parametro em "portMAX_DELAY" 
+- Nos dois exemplos 023 é possivel pegar o retorno da função "ulTaskNotifyTake()" sendo o numero que consta na TaskNotify, ela ainda será decrementada
+
+## (023_TaskNotify_Varios)
+- Várias TaskNotify
+- Mostra ser possivel além de controlar tarefas a partir de interrupções, controlar tarefas a partir de outras tarefas também 
 
 
