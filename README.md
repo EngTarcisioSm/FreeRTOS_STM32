@@ -461,6 +461,9 @@ ___
     - obs3: com o segundo parametro de ulTaskNotifyTake definido em um periodo, essa logica esta associada a timeout, pois caso não ocorrendo o processo, alguma outra atitude pode ser tomada 
 
 ## (023_TaskNotify_SEMAFORO_CONTADOR_2)
-- Lógica baseada a evento 
+- Lógica baseada a evento com:
+~~~c
+
+~~~
 
 

@@ -447,22 +447,17 @@ void vTask_Handle(void *pvParameters) {
 		 * ulTaskNotifyTake não precisamos utilizar uma variavel para fazer a contagem
 		 */
 
-		ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
-		{
+		if( ulTaskNotifyTake(pdFALSE, xMaxExpectedBlockTime) != 0 ) {
+			// Para chegar aqui, pelo menos um evento deve ter ocorrido..
 			vPrintString( "Handler task - Processing event.\r\n");
+		} else {
+			/*
+			 * Se essa parte da função for atingida,
+			 * nenhuma ISR foi recebida no tempo de 500ms
+			 * podendo ser executado algum tratamento de erro ou logica qualquer
+			 */
+			vPrintString( "Time-out TaskNotify. \r\n");
 		}
-
-//		if( ulTaskNotifyTake(pdFALSE, xMaxExpectedBlockTime) != 0 ) {
-//			// Para chegar aqui, pelo menos um evento deve ter ocorrido..
-//			vPrintString( "Handler task - Processing event.\r\n");
-//		} else {
-//			/*
-//			 * Se essa parte da função for atingida,
-//			 * nenhuma ISR foi recebida no tempo de 500ms
-//			 * podendo ser executado algum tratamento de erro ou logica qualquer
-//			 */
-//			vPrintString( "Time-out TaskNotify. \r\n");
-//		}
 
 	}
 }
