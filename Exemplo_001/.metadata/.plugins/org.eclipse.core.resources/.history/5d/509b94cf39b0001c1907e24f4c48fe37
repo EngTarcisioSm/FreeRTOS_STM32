@@ -131,8 +131,7 @@ int main(void) {
 	//O semáforo é criado para ter um valor maximo de 10 contagens e um valor inicial de contagem 0
 	xMutex = xSemaphoreCreateMutex();
 
-	if (xMutex != NULL)
-		vPrintString("xMutex criado com sucesso\n");
+	if (xMutex != NULL) vPrintString("xMutex criado com sucesso\n");
 
 	/* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
@@ -350,7 +349,7 @@ void vPrintString(char *pc_uartSend_f) {
 	{
 		vUsartLib_Puts(pc_uartSend_f);
 	}
-	xSemaphoreGive(xMutex);
+	xSemaphoreGive( xMutex );
 }
 void vUsartLib_Putc(UART_HandleTypeDef *huart, char c_data) {
 	//envia um unico caractere
@@ -376,12 +375,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	/* Envia uma notificação diretamente para tarefa que esta bloqueada aguardando o Semáforo por TaskNotify */
 
 	vTaskNotifyGiveFromISR(
-	/*O identificador da tarefa para a qual a notificação esta sendo enviada.
-	 * O identificador foi salvo quando a tarefa foi criada. */
-	xTaskHandle_ISR, &xHigherPriorityTaskWoken);
-
-	vTaskNotifyGiveFromISR(xTaskHandle_ISR, &xHigherPriorityTaskWoken);
-	vTaskNotifyGiveFromISR(xTaskHandle_ISR, &xHigherPriorityTaskWoken);
+			/*O identificador da tarefa para a qual a notificação esta sendo enviada.
+			 * O identificador foi salvo quando a tarefa foi criada. */
+			xTaskHandle_ISR,
+			xHigherPriorityTaskWoken);
 
 	/*
 	 * Passa o token xHigherPriorityTaskWoken para portYIELD_FROM_ISR().
@@ -389,76 +386,20 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	 * portYIELD_FROM_ISR() irá solicitar uma troca de contexto para tarefa pendente de notificação.
 	 * Se xHigherPriorityTaskWoken for pdFALSE, portYIELD_FROM_ISR() não terá efeito nenhum no escalonador
 	 * */
-	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
-// *************************************** TAREFAS ***************************************************
-void vTask_1(void *pvParameters) {
-
-	vPrintString("vTask_1 inciada!\r\n");
-
-	for (;;) {
-		//xSemaphoreGive(xCountSemaphore);
-		vTaskDelay(200 / portTICK_PERIOD_MS);
-	}
-	vTaskDelay(NULL);
-}
-
-void vTask_2(void *pvParameters) {
-
-	vPrintString("vTask_2 inciada!\r\n");
-
-	for (;;) {
-		//xSemaphoreGive(xBinSemaphore);
-		vTaskDelay(1500 / portTICK_PERIOD_MS);
-	}
-	vTaskDelay(NULL);
-}
-
-void vTask_3(void *pvParameters) {
-
-	vPrintString("vTask_3 inciada!\r\n");
-
-	for (;;) {
-		vTaskDelay(500 / portTICK_PERIOD_MS);
-	}
-	vTaskDelay(NULL);
-}
 void vTask_Handle(void *pvParameters) {
 
-	vPrintString("Task gerenciada pelo semaforo iniciada!\n");
+	vPrintString("Task gerenciada pelo semaforo iniciada!");
 
-	const TickType_t xMaxExpectedBlockTime = pdMS_TO_TICKS(500);
+	const TickType_t xMaxExpectedBlockTime = pdMS_TO_TICKS( 500 );
 
 	for (;;) {
-		/* Aguarda uma notificação da ISR por 500ms */
-		/*
-		 * pdTRUE Limpa o buffer contador, trabalhando somente como semaforo binário.
-		 * pdFALSE incrementa a variavel ulEvents com o numero de Give gerado na ISR, assim trabalhando como semaforo contador.
-		 * Cada chamada TaskNotify decrementa a quantidade de ISR geradas pelo Give
-		 *
-		 */
 
-		/*
-		 * Quando xClearOnExit é pdFALSE,
-		 * chamar ulTaskNotifyTake() só poderá diminuir (reduzir em um) o valor de notificação da tarefa de chamada,
-		 * em vez de reduzir-lo até zero. A contagem de notificações é a diferença entre o número de eventos que ocorram e
-		 * o número de eventos que foram processados. Simplificando e decremento da notificação dentro da função
-		 * ulTaskNotifyTake não precisamos utilizar uma variavel para fazer a contagem
-		 */
-
-		if( ulTaskNotifyTake(pdFALSE, xMaxExpectedBlockTime) != 0 ) {
-			// Para chegar aqui, pelo menos um evento deve ter ocorrido..
-			vPrintString( "Handler task - Processing event.\r\n");
-		} else {
-			/*
-			 * Se essa parte da função for atingida,
-			 * nenhuma ISR foi recebida no tempo de 500ms
-			 * podendo ser executado algum tratamento de erro ou logica qualquer
-			 */
-			vPrintString( "Time-out TaskNotify. \r\n");
-		}
-
+		/*Aguarda uma notificação da ISR por não é executado até que ocorra o evento. */
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		vPrintString("Handler task - Processing event. \r\n");
 	}
 }
 
@@ -495,6 +436,38 @@ void vTask_blink(void *pvParameters) {
 	vTaskDelete( NULL);
 }
 
+void vTask_1(void *pvParameters) {
+
+	vPrintString("vTask_1 inciada!\r\n");
+
+	for (;;) {
+		//xSemaphoreGive(xCountSemaphore);
+		vTaskDelay(500 / portTICK_PERIOD_MS);
+	}
+	vTaskDelay(NULL);
+}
+
+void vTask_2(void *pvParameters) {
+
+	vPrintString("vTask_2 inciada!\r\n");
+
+	for (;;) {
+		//xSemaphoreGive(xBinSemaphore);
+		vTaskDelay(1500 / portTICK_PERIOD_MS);
+	}
+	vTaskDelay(NULL);
+}
+
+void vTask_3(void *pvParameters) {
+
+	vPrintString("vTask_3 inciada!\r\n");
+
+
+	for (;;) {
+		vTaskDelay( 500 / portTICK_PERIOD_MS);
+	}
+	vTaskDelay(NULL);
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */

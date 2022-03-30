@@ -445,7 +445,22 @@ ___
 ## (022_TaskNotify_3_SEMAFORO_BINARIO)
 - Não é pego o retorno ulTaskNotifyTake()
 
-## (023_TaskNotify_4_SEMAFORO_CONTADOR)
+## (023_TaskNotify_SEMAFORO_CONTADOR)
+- Observações 
+    - obs1
+    ~~~c
+        //o valor de xHigherPriorityTaskWoken é pdFALSE, desta forma ao sair da interrupção não é dado preferencia para a tarefa que usa a notificação 
+        //chamar esta função em mais de uma vez incrementa do valor de xTaskHandle_ISR em 1 unidade 
+        vTaskNotifyGiveFromISR(xTaskHandle_ISR, &xHigherPriorityTaskWoken);
+    ~~~
+    - obs2
+    ~~~c
+        //passado com o valor de pdFALSE a função decrementa a TaskNotify existente na tarefa em 1 unidade
+        ulTaskNotifyTake(pdFALSE, xMaxExpectedBlockTime)
+    ~~~
+    - obs3: com o segundo parametro de ulTaskNotifyTake definido em um periodo, essa logica esta associada a timeout, pois caso não ocorrendo o processo, alguma outra atitude pode ser tomada 
 
+## (023_TaskNotify_SEMAFORO_CONTADOR_2)
+- Lógica baseada a evento 
 
 

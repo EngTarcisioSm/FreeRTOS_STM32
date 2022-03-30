@@ -426,7 +426,7 @@ void vTask_3(void *pvParameters) {
 }
 void vTask_Handle(void *pvParameters) {
 
-	vPrintString("Task gerenciada pelo semaforo iniciada!\n");
+	vPrintString("Task gerenciada pelo semaforo iniciada!");
 
 	const TickType_t xMaxExpectedBlockTime = pdMS_TO_TICKS(500);
 
@@ -459,6 +459,12 @@ void vTask_Handle(void *pvParameters) {
 			vPrintString( "Time-out TaskNotify. \r\n");
 		}
 
+
+
+
+		/*Aguarda uma notificação da ISR por não é executado até que ocorra o evento. */
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		vPrintString("Handler task - Processing event. \r\n");
 	}
 }
 

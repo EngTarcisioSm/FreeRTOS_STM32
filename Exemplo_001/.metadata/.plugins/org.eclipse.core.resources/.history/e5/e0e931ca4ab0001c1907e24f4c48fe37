@@ -378,7 +378,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	vTaskNotifyGiveFromISR(
 	/*O identificador da tarefa para a qual a notificação esta sendo enviada.
 	 * O identificador foi salvo quando a tarefa foi criada. */
-	xTaskHandle_ISR, &xHigherPriorityTaskWoken);
+	xTaskHandle_ISR, xHigherPriorityTaskWoken);
 
 	vTaskNotifyGiveFromISR(xTaskHandle_ISR, &xHigherPriorityTaskWoken);
 	vTaskNotifyGiveFromISR(xTaskHandle_ISR, &xHigherPriorityTaskWoken);
@@ -426,7 +426,7 @@ void vTask_3(void *pvParameters) {
 }
 void vTask_Handle(void *pvParameters) {
 
-	vPrintString("Task gerenciada pelo semaforo iniciada!\n");
+	vPrintString("Task gerenciada pelo semaforo iniciada!");
 
 	const TickType_t xMaxExpectedBlockTime = pdMS_TO_TICKS(500);
 
@@ -459,6 +459,12 @@ void vTask_Handle(void *pvParameters) {
 			vPrintString( "Time-out TaskNotify. \r\n");
 		}
 
+
+
+
+		/*Aguarda uma notificação da ISR por não é executado até que ocorra o evento. */
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		vPrintString("Handler task - Processing event. \r\n");
 	}
 }
 

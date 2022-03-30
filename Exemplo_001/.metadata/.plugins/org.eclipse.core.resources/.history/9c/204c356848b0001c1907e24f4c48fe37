@@ -378,7 +378,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	vTaskNotifyGiveFromISR(
 	/*O identificador da tarefa para a qual a notificação esta sendo enviada.
 	 * O identificador foi salvo quando a tarefa foi criada. */
-	xTaskHandle_ISR, &xHigherPriorityTaskWoken);
+	xTaskHandle_ISR, xHigherPriorityTaskWoken);
 
 	vTaskNotifyGiveFromISR(xTaskHandle_ISR, &xHigherPriorityTaskWoken);
 	vTaskNotifyGiveFromISR(xTaskHandle_ISR, &xHigherPriorityTaskWoken);
@@ -426,39 +426,15 @@ void vTask_3(void *pvParameters) {
 }
 void vTask_Handle(void *pvParameters) {
 
-	vPrintString("Task gerenciada pelo semaforo iniciada!\n");
+	vPrintString("Task gerenciada pelo semaforo iniciada!");
 
 	const TickType_t xMaxExpectedBlockTime = pdMS_TO_TICKS(500);
 
 	for (;;) {
-		/* Aguarda uma notificação da ISR por 500ms */
-		/*
-		 * pdTRUE Limpa o buffer contador, trabalhando somente como semaforo binário.
-		 * pdFALSE incrementa a variavel ulEvents com o numero de Give gerado na ISR, assim trabalhando como semaforo contador.
-		 * Cada chamada TaskNotify decrementa a quantidade de ISR geradas pelo Give
-		 *
-		 */
 
-		/*
-		 * Quando xClearOnExit é pdFALSE,
-		 * chamar ulTaskNotifyTake() só poderá diminuir (reduzir em um) o valor de notificação da tarefa de chamada,
-		 * em vez de reduzir-lo até zero. A contagem de notificações é a diferença entre o número de eventos que ocorram e
-		 * o número de eventos que foram processados. Simplificando e decremento da notificação dentro da função
-		 * ulTaskNotifyTake não precisamos utilizar uma variavel para fazer a contagem
-		 */
-
-		if( ulTaskNotifyTake(pdFALSE, xMaxExpectedBlockTime) != 0 ) {
-			// Para chegar aqui, pelo menos um evento deve ter ocorrido..
-			vPrintString( "Handler task - Processing event.\r\n");
-		} else {
-			/*
-			 * Se essa parte da função for atingida,
-			 * nenhuma ISR foi recebida no tempo de 500ms
-			 * podendo ser executado algum tratamento de erro ou logica qualquer
-			 */
-			vPrintString( "Time-out TaskNotify. \r\n");
-		}
-
+		/*Aguarda uma notificação da ISR por não é executado até que ocorra o evento. */
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		vPrintString("Handler task - Processing event. \r\n");
 	}
 }
 
