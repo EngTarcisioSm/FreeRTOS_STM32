@@ -45,12 +45,7 @@ typedef enum {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define ULONG_MAX	0xFFFFFFFF
 
-#define TNBIT_1 0x01
-#define TNBIT_2 0x02
-#define TNBIT_3 0x03
-#define TNBIT_4 0x04
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -66,8 +61,8 @@ UART_HandleTypeDef huart1;
 SemaphoreHandle_t xMutex = NULL;
 
 static TaskHandle_t xTaskHandle_ISR;
-static TaskHandle_t xTaskHandle_Evt_Ext;
-static TaskHandle_t xTaskHandle_3;
+static TaskHandle_t xTaskHandle_Bin;
+static TaskHandle_t xTaskHandle_Count;
 //funções de escrita serial
 void vPrintString(char *pc_uartSend_f);
 void vUsartLib_Putc(UART_HandleTypeDef *huart, char c_data);
@@ -179,21 +174,21 @@ int main(void) {
 	}
 
 	if ((xTaskCreate(vTask_2, "vTask_2", configMINIMAL_STACK_SIZE,
-	NULL, 1, NULL)) != pdTRUE) {
+	NULL, 1, &xTaskHandle_Bin)) != pdTRUE) {
 		vPrintString("não foi possivel alocar tarefa vTask_2 no escalonador\n");
 	} else {
 		vPrintString("Tarefa vTask_2 criada com sucesso!\n");
 	}
 
 	if ((xTaskCreate(vTask_3, "vTask_3", configMINIMAL_STACK_SIZE,
-	NULL, 1, &xTaskHandle_3)) != pdTRUE) {
+	NULL, 1, &xTaskHandle_Bin)) != pdTRUE) {
 		vPrintString("não foi possivel alocar tarefa vTask_3 no escalonador\n");
 	} else {
 		vPrintString("Tarefa vTask_3 criada com sucesso!\n");
 	}
 
 	if ((xTaskCreate(vTask_4, "vTask_4", configMINIMAL_STACK_SIZE,
-	NULL, 1, &xTaskHandle_Evt_Ext)) != pdTRUE) {
+	NULL, 1, &xTaskHandle_Count)) != pdTRUE) {
 		vPrintString("não foi possivel alocar tarefa vTask_4 no escalonador\n");
 	} else {
 		vPrintString("Tarefa vTask_4 criada com sucesso!\n");
@@ -386,13 +381,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	 */
 	xHigherPriorityTaskWoken = pdFALSE;
 
-	/* Envia uma notificação diretamente para tarefa que esta bloqueada aguardando o semaforo por TaskNotify */
-	xTaskNotifyFromISR(xTaskHandle_Evt_Ext, // Handle da task a ser notificada
-			TNBIT_1,// BIT a ser verificado
-			eSetBits,// Setando bit nivel alto
-			NULL);//Parametro NULLpois não estou usando Token para acordar esta task, e sim outra.
-
 	/* Envia uma notificação diretamente para tarefa que esta bloqueada aguardando o Semáforo por TaskNotify */
+
 	vTaskNotifyGiveFromISR(
 	/*O identificador da tarefa para a qual a notificação esta sendo enviada.
 	 * O identificador foi salvo quando a tarefa foi criada. */
@@ -416,7 +406,8 @@ void vTask_1(void *pvParameters) {
 	vPrintString("vTask_1 inciada!\r\n");
 
 	for (;;) {
-		xTaskNotify(xTaskHandle_3, TNBIT_2, eSetBits);
+		xTaskNotifyGive(xTaskHandle_Count);
+		xTaskNotifyGive(xTaskHandle_Count);
 		vTaskDelay(2000 / portTICK_PERIOD_MS);
 	}
 	vTaskDelay(NULL);
@@ -427,8 +418,8 @@ void vTask_2(void *pvParameters) {
 	vPrintString("vTask_2 inciada!\r\n");
 
 	for (;;) {
-		xTaskNotify(xTaskHandle_3, TNBIT_3, eSetBits);
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
+		xTaskNotifyGive(xTaskHandle_Bin);
+		vTaskDelay(1500 / portTICK_PERIOD_MS);
 	}
 	vTaskDelay(NULL);
 }
@@ -437,20 +428,31 @@ void vTask_3(void *pvParameters) {
 
 	vPrintString("vTask_3 inciada!\r\n");
 
-	uint32_t ulNotifiedValue = 0;
+	const TickType_t xMaxExpectedBlockTime = pdMS_TO_TICKS( 500 );
 
 	for (;;) {
-		xTaskNotifyWait( pdFALSE, //pdFALSE = não limpa os bits na entrada da função / pdTRUE = limpa os bits na entrada da função
-				ULONG_MAX, //Limpa todos os BITS na saída, caso queira limpar separadamente (TNBIT_3 | TNBIT_2) como exemplo
-				&ulNotifiedValue, //Variavel para armazenar o valor do bit notificado
-				portMAX_DELAY);
+		/*Aguarda uma notificação da ISR por 500ms. */
+		/** pdTRUE Limpa o buffer contador, trabalhando somente como semaforo binario.
+		 *	pdFALSE incrementa a variavel ulEvents com o numero de Give gerados na ISR, assim trabalhando como semaforo contador.
+		 *	Cada chamada TaskNotify decrementa a quantidade de ISR geradas pelo Give.
+		 */
 
-		if (ulNotifiedValue == TNBIT_2) {
-			vPrintString("Recebido evento da tarefa 1 no BIT_2! \r\n");
-		} else if (ulNotifiedValue == TNBIT_3) {
-			vPrintString("Recebido evento da tarefa 2 no BIT_3! \r\n");
+		/*Quando xClearOnExit é pdFALSE,
+		 * chamar ulTaskNotifyTake() só poderá diminuir (reduzir em um) o valor de notificação da tarefa de chamada,
+		 * em vez de reduzi-lo até zero. A contagem de notificações é a diferença entre o número de eventos que ocorreram e
+		 * o número de eventos que foram processados. Simplificando o decremento da notificação dentro da função ulTaskNotifyTake
+		 * não precisamos utilizar uma variavel para fazer a contagem
+		 */
+
+		if (ulTaskNotifyTake(pdFALSE, xMaxExpectedBlockTime) != 0) {
+			// Para chegar aqui, pelo menos um evento deve ter ocorrido..
+
+			vPrintString("vTask3 - Processing event.\r\n");
 		} else {
-			vPrintString("Outro Bit foi sinalizado");
+			/* Se essa parte da função for atingida,
+			 * nenhuma ISR foi recebida no tempo de 500mS
+			 * podendo ser executado algum tratamento de erro ou logica qualquer. */
+			vPrintString("Time-out TaskNotify vTask3.\r\n");
 		}
 	}
 	vTaskDelay(NULL);
@@ -464,16 +466,28 @@ void vTask_4(void *pvParameters) {
 	uint32_t ulNotifiedValue = 0;
 
 	for (;;) {
+		/*Aguarda uma notificação da ISR por 500ms. */
+		/** Agora iremos trabalhar com uma metodologia mais eficiente
+		 * O valor da quatidade de gives gerados como semaforo contador é armazenado em ulNotifiedValue
+		 * e trataremos cada chamada sem precisar chamar a função ulTaskNotifyTake como no exemplo passado,
+		 * assim dedicando mais desempenho a tarefa.
+		 */
+		ulNotifiedValue = ulTaskNotifyTake(pdTRUE, xMaxExpectedBlockTime);
 
-		if (xTaskNotifyWait( pdFALSE, //pdFALSE = não limpa os bits na entrada da função / pdTRUE = Limpa os bits na entrada da função
-				ULONG_MAX, 					//Limpar todos os BITS na saída
-				&ulNotifiedValue, //Variavel para armazenar o valor do bit notificado
-				portMAX_DELAY) == pdPASS) {
-			if (ulNotifiedValue == TNBIT_1) {
-				vPrintString("Recebido evento no BIT_1! \r\n");
-			} else {
-				vPrintString("Outro BIT foi sinalizado!");
+		if (ulNotifiedValue != 0) {
+			// Para chegar aqui, pelo menos um evento deve ter ocorrido..
+
+			vPrintString("Entrando no semph contador com tak notify!\r\n");
+
+			//enquanto o retorno for diferente de 0, executo o tratamento da ISR
+			while (ulNotifiedValue--) {
+				vPrintString("vTask4 - Processing event.\r\n");
 			}
+		} else {
+			/* Se essa parte da função for atingida,
+			 * nenhuma ISR foi recebida no tempo de 500mS
+			 * podendo ser executado algum tratamento de erro ou logica qualquer. */
+			vPrintString("Time-out TaskNotify. vTask4\r\n");
 		}
 	}
 }
@@ -500,16 +514,22 @@ void vTask_Handle(void *pvParameters) {
 		 * ulTaskNotifyTake não precisamos utilizar uma variavel para fazer a contagem
 		 */
 
-		if (ulTaskNotifyTake(pdFALSE, xMaxExpectedBlockTime) != 0) {
-			// Para chegar aqui, pelo menos um evento deve ter ocorrido..
-
+		ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
+		{
 			vPrintString("Handler task - Processing event.\r\n");
-		} else {
-			/* Se essa parte da função for atingida,
-			 * nenhuma ISR foi recebida no tempo de 500mS
-			 * podendo ser executado algum tratamento de erro ou logica qualquer. */
-			vPrintString("Time-out TaskNotify.\r\n");
 		}
+
+//		if( ulTaskNotifyTake(pdFALSE, xMaxExpectedBlockTime) != 0 ) {
+//			// Para chegar aqui, pelo menos um evento deve ter ocorrido..
+//			vPrintString( "Handler task - Processing event.\r\n");
+//		} else {
+//			/*
+//			 * Se essa parte da função for atingida,
+//			 * nenhuma ISR foi recebida no tempo de 500ms
+//			 * podendo ser executado algum tratamento de erro ou logica qualquer
+//			 */
+//			vPrintString( "Time-out TaskNotify. \r\n");
+//		}
 
 	}
 }

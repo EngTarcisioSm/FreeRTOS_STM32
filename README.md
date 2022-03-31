@@ -473,3 +473,58 @@ ___
 - Mostra ser possivel além de controlar tarefas a partir de interrupções, controlar tarefas a partir de outras tarefas também 
 
 
+## (025_TaskNotify_)
+- Operando como eventgroup;
+
+- São definidos os bits 
+    ~~~c
+        #define ULONG_MAX	0xFFFFFFFF
+
+        #define TNBIT_1 0x01
+        #define TNBIT_2 0x02
+        #define TNBIT_3 0x03
+        #define TNBIT_4 0x04
+    ~~~
+
+- Criação dos TaskNotify
+    ~~~c
+        static TaskHandle_t xTaskHandle_ISR;
+        static TaskHandle_t xTaskHandle_Evt_Ext;
+        static TaskHandle_t xTaskHandle_3;
+    ~~~
+
+~~~c
+    xTaskNotifyFromISR(xTaskHandle_Evt_Ext, // Handle da task a ser notificada
+                    TNBIT_1,// BIT a ser verificado
+                    eSetBits,// Setando bit nivel alto
+                    NULL);//Parametro NULLpois não estou usando Token para acordar esta task, e sim outra.
+~~~
+- Observações da função acima
+    - A função escreve no tasknotify
+    - parametro 01: a TaskNotify a ser escrita
+    - parametro 02: o bit da tasknotify a ser escrito 
+    - parametro 03: o valor a ser escrito no bit 
+    - parametro 04: existe duas situações possiveis neste caso não ira efetuar o wakeup automático da tarefa que aguarda 
+
+~~~c
+    xTaskNotifyWait( pdFALSE, //pdFALSE = não limpa os bits na entrada da função / pdTRUE = limpa os bits na entrada da função
+                    ULONG_MAX, //Limpa todos os BITS na saída, caso queira limpar separadamente (TNBIT_3 | TNBIT_2) como exemplo
+                    &ulNotifiedValue, //Variavel para armazenar o valor do bit notificado
+                    portMAX_DELAY);
+~~~
+- Observações da função acima
+    - parametro 01: Não limpa os dados na entrada justamente para os valores poderem ser copiados  em ulNotifiedValue
+    - parametro 02: Ao sair sinaliza quais bits serão zerados, "ULONG_MAX" neste caso, todos os bits serão resetados 
+    - parametro 03: Local onde o valor será armazenado 
+    - parametro 04: Tempo de espera "portMAX_DELAY" neste caso será associado a evento 
+
+    - A função quanto possui valor retorna pdPASS
+    - Mesmo que o segundo parametro seja definido como 0, isso não permite que a tarefa fica acordada eternamente 
+
+~~~c
+    xTaskNotify(xTaskHandle_3, TNBIT_3,  eSetBits);
+~~~
+- Observações da função acima
+    - parametro 01: a tasknotify a ser manipulada em escrita
+    - parametro 02: bit a ser escrito 
+    - parametro 03: estado do bit (se high ou low)
