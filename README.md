@@ -547,3 +547,22 @@ ___
         - isso é possivel devido ao terceiro parametro da função "eSetValueWithoutOverwrite", para que seja possivel sobrescrever utilizaria "eSetValueWithOverwrite"
 - Na tarefa de recebimento existe a função "xTaskNotifyWait()" tendo seus dois primeiros parametros iguais a zero não limpando os dados na entrada e também não limpando o buffer representado por &ulADCValue
 - Lógica efetuada com o stm32f411ceu
+
+## (027_ADC_DMA)
+- Lógica efetuada com o stm32f411ceu
+- Conversão ADC utilizando DMA com o buffer circular
+    - Efetua a conversão sem utilizar processamento 
+- A função Task_SEND_ADC inicializa o hardware DMA, como o canal ADC é de 12bits, é passado um array de 10 posições de 16bits que funcionará como o buffer 
+~~~c
+HAL_ADC_Start_DMA(&hadc1, (uint32_t*) ADCSamples, 10); //o ultimo parametro é o tamanho do buffer 
+~~~
+- A função entra em estado suspenso indefinidamente até que algum processo a acorde (nesse caso o preenchimento do buffer, na função de callback do dma) 
+~~~c
+vTaskSuspend(NULL); //como foi passado NULLesta suspendendo a propria tarefa, em caso de suspensão de outra tarefa teria de passar seu handle 
+~~~
+- Quando a função é acordada, ela desliga o hardware DMA 
+~~~c
+HAL_ADC_Stop_DMA(&hadc1);
+~~~
+- É preparado um segundo buffer de 10 posições e tamanho de 32bits cada e é enviado esse buffer através de uma fila, essa fila acorda a função de recebimento "vTask_Recv_ADC"
+- A função "vTask_Recv_ADC" printa para o usuário as 10 amostras obtidas 

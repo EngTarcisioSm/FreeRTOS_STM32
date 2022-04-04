@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -59,10 +58,10 @@ typedef enum {
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
 
 UART_HandleTypeDef huart1;
 
-osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 SemaphoreHandle_t xMutex = NULL;
 
@@ -70,14 +69,19 @@ TaskHandle_t xTaskHandle_ISR;
 TaskHandle_t xTaskHandle_Evt_Ext;
 TaskHandle_t xTaskHandle_3;
 TaskHandle_t xTaskHandle_Recv_ADC;
+TaskHandle_t xTaskHandle_Send_ADC;
+
+QueueHandle_t ulAdc_DMA_queue = NULL;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART1_UART_Init(void);
-void StartDefaultTask(void const *argument);
+void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void vTask_blink(void *pvParameter);
@@ -92,7 +96,6 @@ void vTask_Recv_ADC(void *pvParameter);
 void vPrintString(char *UartSend_f);
 void USARTlib_Putc(UART_HandleTypeDef *huart, char c);
 void USARTlib_Puts(char *str);
-uint32_t Ain_Read_value();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -101,278 +104,327 @@ uint32_t Ain_Read_value();
 /* USER CODE END 0 */
 
 /**
- * @brief  The application entry point.
- * @retval int
- */
-int main(void) {
-	/* USER CODE BEGIN 1 */
+  * @brief  The application entry point.
+  * @retval int
+  */
+int main(void)
+{
+  /* USER CODE BEGIN 1 */
 
-	/* USER CODE END 1 */
+  /* USER CODE END 1 */
 
-	/* MCU Configuration--------------------------------------------------------*/
+  /* MCU Configuration--------------------------------------------------------*/
 
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-	/* USER CODE BEGIN Init */
+  /* USER CODE BEGIN Init */
 
-	/* USER CODE END Init */
+  /* USER CODE END Init */
 
-	/* Configure the system clock */
-	SystemClock_Config();
+  /* Configure the system clock */
+  SystemClock_Config();
 
-	/* USER CODE BEGIN SysInit */
+  /* USER CODE BEGIN SysInit */
 
-	/* USER CODE END SysInit */
+  /* USER CODE END SysInit */
 
-	/* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	MX_ADC1_Init();
-	MX_USART1_UART_Init();
-	/* USER CODE BEGIN 2 */
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_ADC1_Init();
+  MX_DMA_Init();
+  MX_USART1_UART_Init();
+  /* USER CODE BEGIN 2 */
 
-	/* USER CODE END 2 */
+  /* USER CODE END 2 */
 
-	/* USER CODE BEGIN RTOS_MUTEX */
+  /* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
 	xMutex = xSemaphoreCreateMutex();
 
 	if (xMutex != NULL)
 		vPrintString("xMutex criada com sucesso!\r\n");
-	/* USER CODE END RTOS_MUTEX */
+  /* USER CODE END RTOS_MUTEX */
 
-	/* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-	/* USER CODE END RTOS_SEMAPHORES */
+  /* USER CODE END RTOS_SEMAPHORES */
 
-	/* USER CODE BEGIN RTOS_TIMERS */
+  /* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-	/* USER CODE END RTOS_TIMERS */
+  /* USER CODE END RTOS_TIMERS */
 
-	/* USER CODE BEGIN RTOS_QUEUES */
+  /* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-	/* USER CODE END RTOS_QUEUES */
+	ulAdc_DMA_queue = xQueueCreate(3, sizeof(uint32_t) * 10);
 
-	/* Create the thread(s) */
-	/* definition and creation of defaultTask */
-	osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-	defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+	if (ulAdc_DMA_queue != NULL)
+		vPrintString("ulAdc_DMA_queue foi criada com sucesso!\r\n");
+  /* USER CODE END RTOS_QUEUES */
 
-	/* USER CODE BEGIN RTOS_THREADS */
+  /* Create the thread(s) */
+  /* definition and creation of defaultTask */
+
+  /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
 
 	if ((xTaskCreate(vTask_blink, "blink task", configMINIMAL_STACK_SIZE * 4,
-	NULL, 1, NULL)) != pdTRUE) {
+			NULL, 1, NULL)) != pdTRUE) {
+		//sprintf(UartSend,"nao foi possivel alocar tarefa vTask_blink no escalonador");
+		//HAL_UART_Transmit(&huart2,(uint8_t*) UartSend, sizeof(UartSend), 10);
+
 		vPrintString(
 				"nao foi possivel alocar tarefa vTaskBlink no escalonador");
 	}
 
 	if ((xTaskCreate(vTask_Handle, "handle task", configMINIMAL_STACK_SIZE,
-	NULL, 2, &xTaskHandle_ISR)) != pdTRUE) {
+			NULL, 2, &xTaskHandle_ISR)) != pdTRUE) {
 		vPrintString(
 				"nao foi possivel alocar tarefa vTask_Handle no escalonador");
 	}
 
 	if ((xTaskCreate(vTask_1, "task 1", configMINIMAL_STACK_SIZE, NULL, 1, NULL))
 			!= pdTRUE) {
+		//sprintf(UartSend,"nao foi possivel alocar tarefa vTask_blink no escalonador");
+		//HAL_UART_Transmit(&huart2,(uint8_t*) UartSend, sizeof(UartSend), 10);
+
 		vPrintString("nao foi possivel alocar tarefa vTask_1 no escalonador");
 	}
 
 	if ((xTaskCreate(vTask_2, "task 2", configMINIMAL_STACK_SIZE, NULL, 1, NULL))
 			!= pdTRUE) {
+		//sprintf(UartSend,"nao foi possivel alocar tarefa vTask_blink no escalonador");
+		//HAL_UART_Transmit(&huart2,(uint8_t*) UartSend, sizeof(UartSend), 10);
+
 		vPrintString("nao foi possivel alocar tarefa vTask_2 no escalonador");
 	}
 
 	if ((xTaskCreate(vTask_3, "task 3", configMINIMAL_STACK_SIZE, NULL, 2,
 			&xTaskHandle_3)) != pdTRUE) {
+		//sprintf(UartSend,"nao foi possivel alocar tarefa vTask_blink no escalonador");
+		//HAL_UART_Transmit(&huart2,(uint8_t*) UartSend, sizeof(UartSend), 10);
+
 		vPrintString("nao foi possivel alocar tarefa vTask_3 no escalonador");
 	}
 
 	if ((xTaskCreate(vTask_4, "task 4", configMINIMAL_STACK_SIZE, NULL, 2,
 			&xTaskHandle_Evt_Ext)) != pdTRUE) {
+		//sprintf(UartSend,"nao foi possivel alocar tarefa vTask_blink no escalonador");
+		//HAL_UART_Transmit(&huart2,(uint8_t*) UartSend, sizeof(UartSend), 10);
+
 		vPrintString("nao foi possivel alocar tarefa vTask_4 no escalonador");
 	}
 
 	if ((xTaskCreate(vTask_SEND_ADC, "taskADC", configMINIMAL_STACK_SIZE, NULL,
-			1, NULL)) != pdTRUE) {
+			1, &xTaskHandle_Send_ADC)) != pdTRUE) {
+		//sprintf(UartSend,"nao foi possivel alocar tarefa vTask_blink no escalonador");
+		//HAL_UART_Transmit(&huart2,(uint8_t*) UartSend, sizeof(UartSend), 10);
+
 		vPrintString("nao foi possivel alocar tarefa vTaskADC no escalonador");
 	}
 
-	if ((xTaskCreate(vTask_Recv_ADC, "RECV ADC", configMINIMAL_STACK_SIZE, NULL,
-			3, &xTaskHandle_Recv_ADC)) != pdTRUE) {
+	if ((xTaskCreate(vTask_Recv_ADC, "RECV ADC", configMINIMAL_STACK_SIZE * 2,
+			NULL, 3, &xTaskHandle_Recv_ADC)) != pdTRUE) {
+		//sprintf(UartSend,"nao foi possivel alocar tarefa vTask_blink no escalonador");
+		//HAL_UART_Transmit(&huart2,(uint8_t*) UartSend, sizeof(UartSend), 10);
+
 		vPrintString(
 				"nao foi possivel alocar tarefa vTask_Recv_ADC no escalonador");
 	}
 
 	vTaskStartScheduler();
-	/* USER CODE END RTOS_THREADS */
+  /* USER CODE END RTOS_THREADS */
 
-	/* Start scheduler */
-	osKernelStart();
+  /* Start scheduler */
 
-	/* We should never get here as control is now taken by the scheduler */
-	/* Infinite loop */
-	/* USER CODE BEGIN WHILE */
+  /* We should never get here as control is now taken by the scheduler */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 	while (1) {
-		/* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
-		/* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 	}
-	/* USER CODE END 3 */
+  /* USER CODE END 3 */
 }
 
 /**
- * @brief System Clock Configuration
- * @retval None
- */
-void SystemClock_Config(void) {
-	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
-	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
+  * @brief System Clock Configuration
+  * @retval None
+  */
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-	/** Configure the main internal regulator output voltage
-	 */
-	__HAL_RCC_PWR_CLK_ENABLE();
-	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-	/** Initializes the RCC Oscillators according to the specified parameters
-	 * in the RCC_OscInitTypeDef structure.
-	 */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-	RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-	RCC_OscInitStruct.PLL.PLLM = 8;
-	RCC_OscInitStruct.PLL.PLLN = 100;
-	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-	RCC_OscInitStruct.PLL.PLLQ = 4;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-		Error_Handler();
-	}
-	/** Initializes the CPU, AHB and APB buses clocks
-	 */
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
-			| RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  /** Configure the main internal regulator output voltage
+  */
+  __HAL_RCC_PWR_CLK_ENABLE();
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 100;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK) {
-		Error_Handler();
-	}
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /**
- * @brief ADC1 Initialization Function
- * @param None
- * @retval None
- */
-static void MX_ADC1_Init(void) {
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
 
-	/* USER CODE BEGIN ADC1_Init 0 */
+  /* USER CODE BEGIN ADC1_Init 0 */
 
-	/* USER CODE END ADC1_Init 0 */
+  /* USER CODE END ADC1_Init 0 */
 
-	ADC_ChannelConfTypeDef sConfig = { 0 };
+  ADC_ChannelConfTypeDef sConfig = {0};
 
-	/* USER CODE BEGIN ADC1_Init 1 */
+  /* USER CODE BEGIN ADC1_Init 1 */
 
-	/* USER CODE END ADC1_Init 1 */
-	/** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
-	 */
-	hadc1.Instance = ADC1;
-	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-	hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-	hadc1.Init.ScanConvMode = DISABLE;
-	hadc1.Init.ContinuousConvMode = DISABLE;
-	hadc1.Init.DiscontinuousConvMode = DISABLE;
-	hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-	hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-	hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-	hadc1.Init.NbrOfConversion = 1;
-	hadc1.Init.DMAContinuousRequests = DISABLE;
-	hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-	if (HAL_ADC_Init(&hadc1) != HAL_OK) {
-		Error_Handler();
-	}
-	/** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-	 */
-	sConfig.Channel = ADC_CHANNEL_0;
-	sConfig.Rank = 1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
-		Error_Handler();
-	}
-	/* USER CODE BEGIN ADC1_Init 2 */
+  /* USER CODE END ADC1_Init 1 */
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.ScanConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
 
-	/* USER CODE END ADC1_Init 2 */
-
-}
-
-/**
- * @brief USART1 Initialization Function
- * @param None
- * @retval None
- */
-static void MX_USART1_UART_Init(void) {
-
-	/* USER CODE BEGIN USART1_Init 0 */
-
-	/* USER CODE END USART1_Init 0 */
-
-	/* USER CODE BEGIN USART1_Init 1 */
-
-	/* USER CODE END USART1_Init 1 */
-	huart1.Instance = USART1;
-	huart1.Init.BaudRate = 115200;
-	huart1.Init.WordLength = UART_WORDLENGTH_8B;
-	huart1.Init.StopBits = UART_STOPBITS_1;
-	huart1.Init.Parity = UART_PARITY_NONE;
-	huart1.Init.Mode = UART_MODE_TX_RX;
-	huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-	if (HAL_UART_Init(&huart1) != HAL_OK) {
-		Error_Handler();
-	}
-	/* USER CODE BEGIN USART1_Init 2 */
-
-	/* USER CODE END USART1_Init 2 */
+  /* USER CODE END ADC1_Init 2 */
 
 }
 
 /**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
-static void MX_GPIO_Init(void) {
-	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_UART_Init(void)
+{
 
-	/* GPIO Ports Clock Enable */
-	__HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOH_CLK_ENABLE();
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	__HAL_RCC_GPIOB_CLK_ENABLE();
+  /* USER CODE BEGIN USART1_Init 0 */
 
-	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(DOUT_LED1_GPIO_Port, DOUT_LED1_Pin, GPIO_PIN_SET);
+  /* USER CODE END USART1_Init 0 */
 
-	/*Configure GPIO pin : DOUT_LED1_Pin */
-	GPIO_InitStruct.Pin = DOUT_LED1_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(DOUT_LED1_GPIO_Port, &GPIO_InitStruct);
+  /* USER CODE BEGIN USART1_Init 1 */
 
-	/*Configure GPIO pin : DIN_BUTTON_Pin */
-	GPIO_InitStruct.Pin = DIN_BUTTON_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	HAL_GPIO_Init(DIN_BUTTON_GPIO_Port, &GPIO_InitStruct);
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
 
-	/* EXTI interrupt init*/
-	HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+  /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA2_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(DOUT_LED1_GPIO_Port, DOUT_LED1_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin : DOUT_LED1_Pin */
+  GPIO_InitStruct.Pin = DOUT_LED1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(DOUT_LED1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : DIN_BUTTON_Pin */
+  GPIO_InitStruct.Pin = DIN_BUTTON_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(DIN_BUTTON_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
 
@@ -397,19 +449,6 @@ void USARTlib_Puts(char *str) {
 	while (*str) {
 		USARTlib_Putc(&huart1, *str++);
 	}
-}
-
-uint32_t Ain_Read_value() {
-	uint32_t result;
-
-//	HAL_ADCEx_Calibration_Start(&hadc1);
-
-	HAL_ADC_Start(&hadc1);
-	HAL_ADC_PollForConversion(&hadc1, 1000);
-	result = HAL_ADC_GetValue(&hadc1);
-	HAL_ADC_Stop(&hadc1);
-
-	return result;
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
@@ -445,27 +484,32 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 }
 
-/*********************************** TASKS **************************************/
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
+	xTaskResumeFromISR(xTaskHandle_Send_ADC);
+}
 
+/*********************************** TASKS **************************************/
 void vTask_SEND_ADC(void *pvParameter) {
 	vPrintString("vTask_SEND_ADC iniciada!\r\n");
 
-	uint32_t analog_pot = 0;
-
-	BaseType_t xResult = pdFAIL;
+	uint16_t ADCSamples[10] = { 0 };
+	uint32_t analog_pot[10] = { 0 };
 
 	for (;;) {
-		analog_pot = Ain_Read_value();
+		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)ADCSamples, 10);
 
-		//essa task emula uma chamada por ISR, a unica diferença é que não usamos o xHigherPriorityTaskWoken
-		do {
-			//enquanto xResult não retornar pdPASS que é informado caso a outra tarefa ja tenha lido o valor, ele irá permancer neste loop tentando executar o envio
-			//é importante observar que o parametro eSetValueWithoutOverwrite significa que:
-			//so irá modificar o valor passado no parametro value utilizado na variavel analog_pot
-			//caso a tarefa notificada tenha lido este valor.
-			xResult = xTaskNotify(xTaskHandle_Recv_ADC, analog_pot,
-					eSetValueWithoutOverwrite);
-		} while (xResult != pdPASS);
+		vTaskSuspend(NULL);
+
+		HAL_ADC_Stop_DMA(&hadc1);
+
+		for (int i = 0; i <= 9; i++)
+			analog_pot[i] = ADCSamples[i];
+
+		//enviar por fila para vTaskRecv
+
+		if ( xQueueSend(ulAdc_DMA_queue, (void* ) &analog_pot,
+				(10/portTICK_PERIOD_MS)) == pdPASS)
+			vPrintString("ADC_DMA enviada na fila!\r\n\r\n");
 
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
@@ -474,19 +518,22 @@ void vTask_SEND_ADC(void *pvParameter) {
 void vTask_Recv_ADC(void *pvParameter) {
 	vPrintString("vTask_Recv_ADC iniciada!\r\n");
 
-	uint32_t ulADCValue = 0;
-	BaseType_t xResult = pdFAIL;
-	char string_value[20] = { 0 };
+	uint32_t ulADCValue[10] = { 0 };
+
+	char string_value[150] = { 0 };
 
 	for (;;) {
-		xResult = xTaskNotifyWait(0, 0, &ulADCValue, portMAX_DELAY);
-		if (xResult == pdPASS) {
-			//aqui podemos processar o valor que chegou do adc, podemos fazer algum filtro digital, media movel ou enviar a um display e etc.
-			sprintf(string_value, "Value: %lu\r\n", ulADCValue);
-			vPrintString(string_value);
-		} else {
-			vPrintString("Erro ao receber task notify!");
-		}
+		xQueueReceive(ulAdc_DMA_queue, &ulADCValue, portMAX_DELAY);
+
+		memset(string_value, 0, sizeof(string_value));
+		//aqui podemos processar o valor que chegou do adc, podemos fazer algum filtro digital, media movel ou enviar a um display e etc.
+		sprintf(string_value,
+				"1 - %lu, 2 - %lu, 3 - %lu, 4 - %lu, 5 - %lu, 6 - %lu, 7 - %lu, 8 - %lu, 9 - %lu, 10 - %lu \r\n",
+				ulADCValue[0], ulADCValue[1], ulADCValue[2], ulADCValue[3],
+				ulADCValue[4], ulADCValue[5], ulADCValue[6], ulADCValue[7],
+				ulADCValue[8], ulADCValue[9]);
+		vPrintString(string_value);
+
 	}
 }
 void vTask_1(void *pvParameter) {
@@ -557,7 +604,7 @@ void vTask_4(void *pvParameter) {
 }
 
 void vTask_Handle(void *pvParameter) {
-	vPrintString("Task gerenciada pelo semaforo iniciada!");
+	vPrintString("Task gerenciada pelo semaforo iniciada!\r\n");
 
 	const TickType_t xMaxExpectedBlockTime = pdMS_TO_TICKS(5000);
 
@@ -589,7 +636,7 @@ void vTask_Handle(void *pvParameter) {
 }
 
 void vTask_blink(void *pvParameter) {
-	char buff[400];
+	char buff[500];
 
 	//uint16_t size_heap = 0;
 
@@ -610,8 +657,7 @@ void vTask_blink(void *pvParameter) {
 
 		vTaskDelay(5000 / portTICK_PERIOD_MS);
 
-		HAL_GPIO_TogglePin(DOUT_LED1_GPIO_Port, DOUT_LED1_Pin);
-
+		//vPrintString("Task Blink \r\n");
 	}
 
 	vTaskDelete(NULL);
@@ -626,46 +672,50 @@ void vTask_blink(void *pvParameter) {
  * @retval None
  */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const *argument) {
-	/* USER CODE BEGIN 5 */
-	/* Infinite loop */
-	for (;;) {
-		osDelay(1);
-	}
-	/* USER CODE END 5 */
+void StartDefaultTask(void const * argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
 }
 
 /**
- * @brief  Period elapsed callback in non blocking mode
- * @note   This function is called  when TIM10 interrupt took place, inside
- * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
- * a global variable "uwTick" used as application time base.
- * @param  htim : TIM handle
- * @retval None
- */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	/* USER CODE BEGIN Callback 0 */
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM2 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
 
-	/* USER CODE END Callback 0 */
-	if (htim->Instance == TIM10) {
-		HAL_IncTick();
-	}
-	/* USER CODE BEGIN Callback 1 */
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM2) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
 
-	/* USER CODE END Callback 1 */
+  /* USER CODE END Callback 1 */
 }
 
 /**
- * @brief  This function is executed in case of error occurrence.
- * @retval None
- */
-void Error_Handler(void) {
-	/* USER CODE BEGIN Error_Handler_Debug */
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	__disable_irq();
 	while (1) {
 	}
-	/* USER CODE END Error_Handler_Debug */
+  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
