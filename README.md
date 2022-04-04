@@ -528,3 +528,22 @@ ___
     - parametro 01: a tasknotify a ser manipulada em escrita
     - parametro 02: bit a ser escrito 
     - parametro 03: estado do bit (se high ou low)
+
+## (026_ADC_Polling_TaskNotify)
+- Apresenta duas tarefas extras, sendo a primeira de leitura do adc e a segunda de escrita na serial do valor adc 
+- Na função de leitura adc existe uma lógica que o valor lido no canal ADC é escrito na tasknotify da função de leitura. 
+- Existe uma lógica em que a função de leitura só consegue escrever na tasknotify da de leitura se ela estiver vazia:
+    ~~~c
+        do {
+			//enquanto xResult não retornar pdPASS que é informado caso a outra tarefa ja tenha lido o valor, ele irá permancer neste loop tentando executar o envio
+			//é importante observar que o parametro eSetValueWithoutOverwrite significa que:
+			//so irá modificar o valor passado no parametro value utilizado na variavel analog_pot
+			//caso a tarefa notificada tenha lido este valor.
+			xResult = xTaskNotify(xTaskHandle_Recv_ADC, analog_pot,
+					eSetValueWithoutOverwrite);
+		} while (xResult != pdPASS);
+    ~~~
+    - caso a escrita não seja possivel o valor de xResult será diferente de pdPASS 
+        - isso é possivel devido ao terceiro parametro da função "eSetValueWithoutOverwrite", para que seja possivel sobrescrever utilizaria "eSetValueWithOverwrite"
+- Na tarefa de recebimento existe a função "xTaskNotifyWait()" tendo seus dois primeiros parametros iguais a zero não limpando os dados na entrada e também não limpando o buffer representado por &ulADCValue
+- Lógica efetuada com o stm32f411ceu

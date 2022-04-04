@@ -45,6 +45,21 @@
 
 /* USER CODE BEGIN Includes */
 /* Section where include file can be added */
+#define configUSE_QUEUE_SETS					1
+
+#define configUSE_TIMERS						1
+#define configTIMER_TASK_PRIORITY				5
+#define	configTIMER_QUEUE_LENGTH				10
+#define configTIMER_TASK_STACK_DEPTH			256
+
+#define configUSE_COUNTING_SEMAPHORES			1
+#define configUSE_MUTEXES						1
+#define configUSE_RECURSIVE_MUTEXES				1
+
+#define configUSE_TASK_NOTIFICATIONS			1
+
+#define configUSE_TRACE_FACILITY                 1
+#define configUSE_STATS_FORMATTING_FUNCTIONS     1
 /* USER CODE END Includes */
 
 /* Ensure definitions are only used by the compiler, and not by the assembler. */
@@ -56,7 +71,7 @@
 #define configENABLE_MPU                         0
 
 #define configUSE_PREEMPTION                     1
-#define configSUPPORT_STATIC_ALLOCATION          1
+#define configSUPPORT_STATIC_ALLOCATION          0
 #define configSUPPORT_DYNAMIC_ALLOCATION         1
 #define configUSE_IDLE_HOOK                      0
 #define configUSE_TICK_HOOK                      0
@@ -64,7 +79,7 @@
 #define configTICK_RATE_HZ                       ((TickType_t)1000)
 #define configMAX_PRIORITIES                     ( 7 )
 #define configMINIMAL_STACK_SIZE                 ((uint16_t)128)
-#define configTOTAL_HEAP_SIZE                    ((size_t)15360)
+#define configTOTAL_HEAP_SIZE                    ((size_t)1024 * 90)
 #define configMAX_TASK_NAME_LEN                  ( 16 )
 #define configUSE_16_BIT_TICKS                   0
 #define configUSE_MUTEXES                        1
@@ -134,6 +149,8 @@ standard names. */
 
 /* USER CODE BEGIN Defines */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
+#define INCLUDE_xTaskGetIdleTaskHandle	1
+#define include_pxTaskGetStackStart		1
 /* USER CODE END Defines */
 
 #endif /* FREERTOS_CONFIG_H */

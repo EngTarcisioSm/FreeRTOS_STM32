@@ -60,6 +60,9 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define DOUT_LED1_Pin GPIO_PIN_13
 #define DOUT_LED1_GPIO_Port GPIOC
+#define DIN_BUTTON_Pin GPIO_PIN_12
+#define DIN_BUTTON_GPIO_Port GPIOB
+#define DIN_BUTTON_EXTI_IRQn EXTI15_10_IRQn
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
