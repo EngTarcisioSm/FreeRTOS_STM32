@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -62,7 +61,6 @@ ADC_HandleTypeDef hadc1;
 
 UART_HandleTypeDef huart1;
 
-osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 SemaphoreHandle_t xMutex = NULL;
 
@@ -155,8 +153,6 @@ int main(void) {
 
 	/* Create the thread(s) */
 	/* definition and creation of defaultTask */
-	osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-	defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
 	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -208,7 +204,7 @@ int main(void) {
 	/* USER CODE END RTOS_THREADS */
 
 	/* Start scheduler */
-	osKernelStart();
+
 
 	/* We should never get here as control is now taken by the scheduler */
 	/* Infinite loop */
